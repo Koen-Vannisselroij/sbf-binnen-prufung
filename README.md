@@ -38,5 +38,20 @@ Testing
 - Python unittests live in `tests/`.
 - Run: `python -m unittest discover -s tests -v`
 
+Android (Capacitor)
+- Keep code in this repo; the Android project lives under `frontend/android`.
+- One-time setup:
+  - In `frontend/`: `npm install` (installs CRA and Capacitor)
+  - Build web assets: `npm run build`
+  - Initialize Capacitor: `npm run cap:init` (uses id `com.example.sbfbinnen`)
+  - Add Android platform: `npm run cap:add:android`
+- Build & run:
+  - Copy current web build to native project: `npm run cap:copy`
+  - Open Android Studio: `npm run cap:open:android`
+  - Select a device/emulator and Run.
+- Notes:
+  - `frontend/package.json` has `"homepage": "."` so asset paths are relative.
+  - Configuration lives in `frontend/capacitor.config.ts`.
+
 Notes
 - The React app imports `./questions.json` inside `src/`, ensure a copy exists there when building the frontend.
