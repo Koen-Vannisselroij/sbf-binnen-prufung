@@ -52,6 +52,7 @@ pnpm-lock.yaml
 
 # React/Frontend
 build/
+dist/
 coverage/
 *.local
 *.env
