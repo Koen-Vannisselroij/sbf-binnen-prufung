@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import questions from "./questions_with_tips_and_explanations.json";
-import Question from "./Question";
+import Question from "./Question.jsx";
 import "./App.css";
 
 const MISTAKES_KEY = "sbf-mistakes";
