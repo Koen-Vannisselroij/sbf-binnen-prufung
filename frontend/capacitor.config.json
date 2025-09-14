@@ -1,0 +1,9 @@
+{
+  "appId": "com.example.sbfbinnen",
+  "appName": "sbf-binnen-trainer",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
+
