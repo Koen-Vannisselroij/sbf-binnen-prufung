@@ -3,6 +3,9 @@ SBF Binnen Prüfung — Learning App
 
 An open‑source learning app for the Sportbootführerschein Binnen (SBF Binnen). It lets you practice multiple‑choice questions, shows instant feedback, reveals the correct answer when you make a mistake, and can include tips and explanations to help you understand the “why”.
 
+I was mainly annoyed by the fact that there is an app available which costs 30 euro's where the only usable feature is that it gives tips to the end user if a question is wrong. I generated tips using LLM's and created my own version. It does not have images yet.
+I used a non-polished version of this to pass the exam myself.
+
 What’s inside
 - React + Vite frontend in `frontend/` (web app; can be wrapped for Android with Capacitor)
 - Python tools in `sbf_tools/` and CLI scripts in `tools/` to parse the official catalog and optionally enrich questions using an LLM
