@@ -1,57 +1,93 @@
-SBF Binnen Prüfung — Repository
-===============================
+SBF Binnen Prüfung — Learning App
+=================================
 
-Refactor highlights
-- One file per function (Python modules split under `sbf_tools/`).
-- Snake_case for Python functions and modules; React code uses camelCase.
-- Pure parsing pipeline extracted and covered by unittests.
- - Python CLIs moved under `tools/` for clarity.
+An open‑source learning app for the Sportbootführerschein Binnen (SBF Binnen). It lets you practice multiple‑choice questions, shows instant feedback, reveals the correct answer when you make a mistake, and can include tips and explanations to help you understand the “why”.
 
-Structure
-- `sbf_tools/parse_questions.py`: `parse_questions(text)`
-- `sbf_tools/generate_questions_json.py`: `generate_questions_json(in_path, out_path)`
-- `sbf_tools/read_text_file.py`: `read_text_file(path)`
-- `sbf_tools/write_json_file.py`: `write_json_file(path, data)`
-- `sbf_tools/build_tip_prompt.py`: `build_tip_prompt(q)`
-- `sbf_tools/build_explanation_prompt.py`: `build_explanation_prompt(q)`
-- `sbf_tools/get_completion_async.py`: `get_completion(prompt, client, model)` (async)
-- `sbf_tools/process_question_async.py`: `process_question(...)` (async)
-- `sbf_tools/process_all_questions_async.py`: `process_all_questions(...)` (async)
-- `tools/parser.py`: CLI entry calling `generate_questions_json()`
-- `tools/explanation_giver.py`: CLI for async enrichment (requires OpenAI credentials)
+What’s inside
+- React + Vite frontend in `frontend/` (web app; can be wrapped for Android with Capacitor)
+- Python tools in `sbf_tools/` and CLI scripts in `tools/` to parse the official catalog and optionally enrich questions using an LLM
+- Basic Python unit tests in `tests/`
 
-Run the app
-- Generate questions JSON:
-  - `python tools/parser.py` → writes `questions.json` at repo root
-- Copy JSON into the React app:
-  - `cp questions.json frontend/src/questions.json`
-- Start frontend:
-  - `cd frontend && npm install && npm start`
+Features
+- Practice all questions or focus on mistakes (1x or 2x wrong)
+- Saves progress locally (localStorage)
+- Shows the correct answer when you’re wrong
+- Optional tips and explanations per question
 
-Optional: enrich with tips/explanations
-- Ensure `.env` has `OPENAI_API_KEY`, then run:
-  - `python tools/explanation_giver.py`
-- Copy enriched file for the UI:
-  - `cp questions_with_tips_and_explanations.json frontend/src/questions.json`
+Tech Stack
+- Frontend: React 19 + Vite 5
+- Mobile: Capacitor 7 (Android project under `frontend/android`)
+- Tooling: Python 3.10+ with `openai` (v1 SDK) and `python-dotenv`
 
-Testing
-- Python unittests live in `tests/`.
-- Run: `python -m unittest discover -s tests -v`
+Repository Structure
+- `frontend/` — Vite + React app (web, Android wrapper via Capacitor)
+- `sbf_tools/` — Python library (one function/class per file)
+- `tools/` — Python CLIs to parse/enrich questions
+- `tests/` — Python unit tests for the parsing pipeline
+- `docs/` — Additional documentation
+
+Quick Start (Web)
+1) Prerequisites
+   - Node.js 18+ (20/22/24 OK)
+   - Python 3.10+
+
+2) Install and run the web app
+   - `cd frontend`
+   - `npm install`
+   - `npm run dev`
+   - Open the printed URL (e.g., `http://localhost:5173`)
+
+3) Use included questions
+   - By default, the app imports `src/questions_with_tips_and_explanations.json` which is included in the repo.
+
+Refreshing Questions (Optional)
+You can regenerate base questions and optionally enrich them with tips/explanations.
+
+1) Python environment
+- Create `.env` from the example: `cp .env.example .env`
+- If you want to enrich with tips/explanations, add your `OPENAI_API_KEY` to `.env`.
+
+2) Install Python dependencies
+- Using pipx/virtualenv or your preferred tool, from repo root run:
+  - `python -m pip install -U pip`
+  - `python -m pip install -e .`  (uses `pyproject.toml`)
+
+3) Generate base questions JSON
+- Ensure the input file `fragenkatalog.txt` (official question catalog text) exists at the repo root, then run:
+- `python tools/parser.py`  → writes `questions.json` at repo root
+- Data source: The official SBF question catalog (Fragenkatalog) is published by the German waterways authority on ELWIS (Elektronisches Wasserstraßen‑Informationssystem). See https://www.elwis.de (navigate: Freizeitschifffahrt → Sportbootführerscheine → Fragenkataloge). Ensure you comply with their terms and use the current version.
+
+4) Enrich with tips/explanations (optional)
+- `python tools/explanation_giver.py`  → writes `questions_with_tips_and_explanations.json`
+
+5) Use in the app
+- Copy whichever file you prefer into the frontend:
+  - `cp questions_with_tips_and_explanations.json frontend/src/questions_with_tips_and_explanations.json`
+  - or `cp questions.json frontend/src/questions.json` and adjust imports if needed
 
 Android (Capacitor)
-- Keep code in this repo; the Android project lives under `frontend/android`.
-- One-time setup:
-  - In `frontend/`: `npm install` (installs CRA and Capacitor)
-  - Build web assets: `npm run build`
-  - Initialize Capacitor: `npm run cap:init` (uses id `com.example.sbfbinnen`)
-  - Add Android platform: `npm run cap:add:android`
-- Build & run:
-  - Copy current web build to native project: `npm run cap:copy`
-  - Open Android Studio: `npm run cap:open:android`
-  - Select a device/emulator and Run.
-- Notes:
-  - `frontend/package.json` has `"homepage": "."` so asset paths are relative.
-  - Configuration lives in `frontend/capacitor.config.ts`.
+The Android project under `frontend/android` is already set up for Capacitor 7.
 
-Notes
-- The React app imports `./questions.json` inside `src/`, ensure a copy exists there when building the frontend.
+Common commands from `frontend/`:
+- Build web assets: `npm run build`
+- Copy web assets to native project: `npm run cap:copy`
+- Open Android Studio: `npm run cap:open:android`
+- Doctor check: `npm run cap:doctor`
+
+If you prefer to exclude the native project from the repo, you can delete `frontend/android` locally and regenerate with `npx cap add android` (the `.gitignore` already excludes build/signing artifacts).
+
+Testing
+- Python tests: `python -m unittest discover -s tests -v`
+- There are currently no JavaScript unit tests included.
+
+Environment Variables
+- `OPENAI_API_KEY` (optional) — required only for generating tips/explanations with the Python tools. Place it in `.env`.
+
+Contributing
+- Issues and PRs welcome. Please avoid committing secrets or local build artifacts. The CI runs Python tests and a Node build.
+
+Attribution & Disclaimer
+- Questions are derived from the official SBF question catalog published on ELWIS. This is an unofficial educational project and is not affiliated with BMDV/ELWIS. All rights remain with their respective owners. If you represent the rights holder and want content removed, please open an issue in this repository and it will be addressed promptly.
+
+License
+This project is licensed under the MIT License — see `LICENSE` for details.
