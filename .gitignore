@@ -107,6 +107,14 @@ frontend/android/local.properties
 frontend/android/captures/
 frontend/android/app/build/
 frontend/android/build/
+frontend/android/app/src/main/assets/public/
+frontend/android/app/src/main/assets/capacitor.config.json
+frontend/android/app/release/
+
+# Android signing and secrets
+*.jks
+*.keystore
+**/keystore.properties
 
 # Docker
 *.pid
