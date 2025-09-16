@@ -1,6 +1,6 @@
 {
-  "appId": "com.example.sbfbinnen",
-  "appName": "sbf-binnen-trainer",
+  "appId": "com.koen.sbfbinnen",
+  "appName": "SBF-Binnen Übung | mit (kostenloser) Tipp-Funktion",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
