@@ -1,6 +1,6 @@
 {
   "appId": "com.koen.sbfbinnen",
-  "appName": "SBF-Binnen Übung | mit (kostenloser) Tipp-Funktion",
+  "appName": "SBF-Binnen | Kostenlos",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
