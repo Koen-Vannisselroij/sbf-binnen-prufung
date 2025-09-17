@@ -1,0 +1,23 @@
+{
+  "basis": {
+    "label": "Basisfragen",
+    "range": [1, 72],
+    "count": 72,
+    "description": "Allgemeine Grundlagen des SBF Binnen, verpflichtend für Motor- und Segelprüfung.",
+    "sources": ["elwis.de"]
+  },
+  "binnen": {
+    "label": "Spezifische Fragen Binnen (Motor)",
+    "range": [73, 253],
+    "count": 181,
+    "description": "Navigation, Gesetzeskunde und Technik für Binnen unter Antriebsmaschine.",
+    "sources": ["elwis.de"]
+  },
+  "segel": {
+    "label": "Spezifische Fragen Segeln",
+    "range": [254, 300],
+    "count": 47,
+    "description": "Segeltheorie und Manöver für den Segelteil.",
+    "sources": ["elwis.de"]
+  }
+}

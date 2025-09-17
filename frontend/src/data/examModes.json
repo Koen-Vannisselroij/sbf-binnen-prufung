@@ -1,0 +1,47 @@
+{
+  "AM": {
+    "label": "Binnen unter Antriebsmaschine (Motor)",
+    "description": "Standardprüfung mit Basis- und Binnenfragen.",
+    "formCategory": "motor",
+    "questionCount": 30,
+    "timeMinutes": 45,
+    "maxWrong": 6,
+    "includesPools": ["basis", "binnen"],
+    "sources": ["elwis.de", "Wikipedia", "Nautigo Bootsschule"]
+  },
+  "S": {
+    "label": "Binnen unter Segel",
+    "description": "Segelprüfung mit Basisfragen, ausgewählten Binnenfragen und Segelteil.",
+    "formCategory": "sail",
+    "questionCount": 25,
+    "timeMinutes": 35,
+    "maxWrong": null,
+    "includesPools": ["basis", "binnen", "segel"],
+    "notes": "Mindestens ca. 20 richtige Antworten erforderlich (Regel je nach Prüfer).",
+    "sources": ["elwis.de", "Nautigo Bootsschule"]
+  },
+  "AMS": {
+    "label": "Kombiprüfung Motor + Segel",
+    "description": "Kombi aus Motor-Fragebogen plus Segel-Ergänzungsbogen.",
+    "composite": {
+      "primaryCategory": "motor",
+      "supplementCategory": "sailSupplements"
+    },
+    "questionCount": 37,
+    "timeMinutes": 60,
+    "maxWrong": 8,
+    "includesPools": ["basis", "binnen", "segel"],
+    "sources": ["elwis.de", "Wikipedia"]
+  },
+  "Supplement": {
+    "label": "Segel-Ergänzungsprüfung",
+    "description": "Zusatz für Inhaber der Motorprüfung (nur Segelfragen).",
+    "formCategory": "sailSupplements",
+    "questionCount": 7,
+    "timeMinutes": 20,
+    "maxWrong": 1,
+    "includesPools": ["segel"],
+    "notes": "Wird zusätzlich zum Motor-Fragebogen abgelegt.",
+    "sources": ["elwis.de", "skipperwerden.de"]
+  }
+}

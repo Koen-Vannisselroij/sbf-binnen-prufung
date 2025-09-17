@@ -29,11 +29,12 @@ function Question({ data, onAnswer, qNum, total }) {
 
   return (
     <div>
-      <div>
-        <strong>Frage {qNum}/{total}:</strong>
+      <div className="question-meta">
+        <span className="question-index">Frage {qNum}<span className="question-total">/{total}</span></span>
+        <span className="question-id">Katalog-ID {data.id}</span>
       </div>
-      <h3 style={{ fontWeight: "normal" }}>{data.question}</h3>
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      <h3 className="question-title">{data.question}</h3>
+      <ul className="option-list">
         {shuffled.map((opt, i) => {
           let className = "option-button";
           if (selected != null) {
@@ -46,7 +47,7 @@ function Question({ data, onAnswer, qNum, total }) {
             }
           }
           return (
-            <li key={i} style={{ margin: "8px 0" }}>
+            <li key={i}>
               <button
                 className={className}
                 onClick={() => handleClick(i)}
@@ -93,4 +94,3 @@ function Question({ data, onAnswer, qNum, total }) {
 }
 
 export default Question;
-
