@@ -22,6 +22,7 @@ const EXAM_MODE_KEY = "sbf-exam-mode";
 const SUPPLEMENT_FORM_KEY = "sbf-selected-supplement";
 const EXAM_STATS_KEY = "sbf-exam-stats";
 const PRACTICE_IDX_KEY = "sbf-practice-idx";
+const PRACTICE_PROGRESS_KEY = "sbf-practice-progress";
 const EXAM_PROGRESS_KEY = "sbf-exam-progress";
 
 function App() {
@@ -36,6 +37,15 @@ function App() {
   const [practiceIdx, setPracticeIdx] = useState(() => {
     const val = localStorage.getItem(PRACTICE_IDX_KEY);
     return val ? parseInt(val, 10) : 0;
+  });
+  const [practiceProgress, setPracticeProgress] = useState(() => {
+    try {
+      const raw = localStorage.getItem(PRACTICE_PROGRESS_KEY);
+      return raw ? JSON.parse(raw) : { all: 0, wrong: 0, "wrong-twice": 0 };
+    } catch (error) {
+      console.warn("Practice progress could not be read", error);
+      return { all: 0, wrong: 0, "wrong-twice": 0 };
+    }
   });
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -91,6 +101,13 @@ function App() {
   useEffect(() => {
     localStorage.setItem(PRACTICE_IDX_KEY, String(practiceIdx));
   }, [practiceIdx]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(PRACTICE_PROGRESS_KEY, JSON.stringify(practiceProgress));
+    } catch (error) {
+      console.warn("Could not persist practice progress", error);
+    }
+  }, [practiceProgress]);
   useEffect(() => {
     if (sessionMode) {
       localStorage.setItem(MODE_KEY, sessionMode);
@@ -321,12 +338,12 @@ function App() {
 
   // Reset state when mode changes (and store progress)
   useEffect(() => {
-    setPracticeIdx(0);
+    const nextIdx = practiceProgress[practiceMode] || 0;
+    setPracticeIdx(nextIdx);
     setShowResult(false);
     setScore(0);
     setUserAnswers([]);
-    // Don't reset mistakes here!
-  }, [practiceMode]);
+  }, [practiceMode, practiceProgress]);
 
   useEffect(() => {
     if (totalQuestions <= 0) {
@@ -374,6 +391,7 @@ function App() {
         updateExamProgress(examMode, selectedForm, 0);
       } else {
         setPracticeIdx(0);
+        setPracticeProgress(prev => ({ ...prev, [practiceMode]: 0 }));
       }
       setShowResult(true);
     } else {
@@ -382,6 +400,7 @@ function App() {
         updateExamProgress(examMode, selectedForm, nextIdx);
       } else {
         setPracticeIdx(nextIdx);
+        setPracticeProgress(prev => ({ ...prev, [practiceMode]: nextIdx }));
       }
     }
   }
@@ -391,6 +410,7 @@ function App() {
       updateExamProgress(examMode, selectedForm, 0);
     } else {
       setPracticeIdx(0);
+      setPracticeProgress(prev => ({ ...prev, [practiceMode]: 0 }));
     }
     setScore(0);
     setShowResult(false);
@@ -411,6 +431,7 @@ function App() {
       setIsMenuOpen(false);
     } else {
       setPracticeIdx(0);
+      setPracticeProgress({ all: 0, wrong: 0, "wrong-twice": 0 });
       setScore(0);
       setShowResult(false);
       setUserAnswers([]);
