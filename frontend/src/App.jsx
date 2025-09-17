@@ -660,12 +660,6 @@ function App() {
               </button>
             </div>
           )}
-          <button
-            className="link-button"
-            onClick={() => openMenu("mode")}
-          >
-            Zurück
-          </button>
         </div>
       )}
       <header className="header">
