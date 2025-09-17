@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import questions from "./questions_with_tips_and_explanations.json";
 import Question from "./Question.jsx";
 import {
@@ -15,12 +15,14 @@ import "./App.css";
 
 const MISTAKES_KEY = "sbf-mistakes";
 const PRACTICE_MODE_KEY = "sbf-mode";
-const PROGRESS_IDX_KEY = "sbf-idx";
 const MODE_KEY = "sbf-session-mode";
 const MODE_CATEGORY_KEY = "sbf-mode-category";
 const FORM_KEY = "sbf-selected-form";
 const EXAM_MODE_KEY = "sbf-exam-mode";
 const SUPPLEMENT_FORM_KEY = "sbf-selected-supplement";
+const EXAM_STATS_KEY = "sbf-exam-stats";
+const PRACTICE_IDX_KEY = "sbf-practice-idx";
+const EXAM_PROGRESS_KEY = "sbf-exam-progress";
 
 function App() {
   // Load from localStorage or fallback to default
@@ -31,8 +33,8 @@ function App() {
   const [practiceMode, setPracticeMode] = useState(() => {
     return localStorage.getItem(PRACTICE_MODE_KEY) || "all";
   });
-  const [idx, setIdx] = useState(() => {
-    const val = localStorage.getItem(PROGRESS_IDX_KEY);
+  const [practiceIdx, setPracticeIdx] = useState(() => {
+    const val = localStorage.getItem(PRACTICE_IDX_KEY);
     return val ? parseInt(val, 10) : 0;
   });
   const [score, setScore] = useState(0);
@@ -41,6 +43,12 @@ function App() {
   const [sessionMode, setSessionMode] = useState(() => {
     return localStorage.getItem(MODE_KEY) || null;
   });
+  const [isMenuOpen, setIsMenuOpen] = useState(() => {
+    const stored = localStorage.getItem(MODE_KEY);
+    return !stored;
+  });
+  const [menuView, setMenuView] = useState("mode");
+  const menuContentRef = useRef(null);
   const [examCategory, setExamCategory] = useState(() => {
     return localStorage.getItem(MODE_CATEGORY_KEY) || DEFAULT_CATEGORY;
   });
@@ -54,6 +62,24 @@ function App() {
   const [selectedSupplement, setSelectedSupplement] = useState(() => {
     return localStorage.getItem(SUPPLEMENT_FORM_KEY) || "";
   });
+  const [examStats, setExamStats] = useState(() => {
+    try {
+      const raw = localStorage.getItem(EXAM_STATS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (error) {
+      console.warn("Exam stats could not be read", error);
+      return {};
+    }
+  });
+  const [examProgress, setExamProgress] = useState(() => {
+    try {
+      const raw = localStorage.getItem(EXAM_PROGRESS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (error) {
+      console.warn("Exam progress could not be read", error);
+      return {};
+    }
+  });
 
   // Save to localStorage whenever these states change
   useEffect(() => {
@@ -63,16 +89,20 @@ function App() {
     localStorage.setItem(PRACTICE_MODE_KEY, practiceMode);
   }, [practiceMode]);
   useEffect(() => {
-    localStorage.setItem(PROGRESS_IDX_KEY, idx);
-  }, [idx]);
+    localStorage.setItem(PRACTICE_IDX_KEY, String(practiceIdx));
+  }, [practiceIdx]);
   useEffect(() => {
     if (sessionMode) {
       localStorage.setItem(MODE_KEY, sessionMode);
+    } else {
+      localStorage.removeItem(MODE_KEY);
     }
   }, [sessionMode]);
   useEffect(() => {
     if (examCategory) {
       localStorage.setItem(MODE_CATEGORY_KEY, examCategory);
+    } else {
+      localStorage.removeItem(MODE_CATEGORY_KEY);
     }
   }, [examCategory]);
   useEffect(() => {
@@ -107,9 +137,21 @@ function App() {
   useEffect(() => {
     setSelectedForm("");
     setSelectedSupplement("");
-    setIdx(0);
-    setShowResult(false);
+    if (sessionMode !== "practice") {
+      setShowResult(false);
+      setScore(0);
+      setUserAnswers([]);
+    }
   }, [examMode]);
+
+  useEffect(() => {
+    if (examMode === "AMS") {
+      const expectedSupplement = selectedForm ? `E${selectedForm}` : "";
+      if (selectedSupplement !== expectedSupplement) {
+        setSelectedSupplement(expectedSupplement);
+      }
+    }
+  }, [examMode, selectedForm, selectedSupplement]);
 
   useEffect(() => {
     if (import.meta.env?.DEV) {
@@ -122,6 +164,72 @@ function App() {
   }, []);
 
   const questionIndex = createQuestionIndex(questions);
+
+  function recordExamResult(modeKey, formKey, correct, total) {
+    if (!modeKey || !formKey || !Number.isFinite(total) || total <= 0) {
+      return;
+    }
+    const normalizedFormKey = String(formKey);
+    setExamStats(prev => {
+      const next = { ...prev };
+      const modeMap = { ...(next[modeKey] || {}) };
+      const existing = modeMap[normalizedFormKey];
+      const attempts = (existing?.attempts || 0) + 1;
+      const now = new Date().toISOString();
+      const currentPercent = total > 0 ? Math.max(Math.min(correct / total, 1), 0) : 0;
+      const previousBest = typeof existing?.bestPercent === "number" ? existing.bestPercent : -1;
+      let bestPercent = previousBest;
+      let bestCorrect = existing?.bestCorrect ?? 0;
+      let bestTotal = existing?.bestTotal ?? total;
+      let bestTimestamp = existing?.bestTimestamp ?? null;
+
+      if (currentPercent >= previousBest) {
+        bestPercent = currentPercent;
+        bestCorrect = correct;
+        bestTotal = total;
+        bestTimestamp = now;
+      }
+
+      const record = {
+        attempts,
+        lastCorrect: correct,
+        lastTotal: total,
+        lastTimestamp: now,
+        bestCorrect,
+        bestTotal,
+        bestPercent,
+        bestTimestamp
+      };
+
+      modeMap[normalizedFormKey] = record;
+      next[modeKey] = modeMap;
+      try {
+        localStorage.setItem(EXAM_STATS_KEY, JSON.stringify(next));
+      } catch (error) {
+        console.warn("Could not persist exam stats", error);
+      }
+      return next;
+    });
+  }
+
+  function updateExamProgress(modeKey, formKey, value) {
+    if (!modeKey || !formKey || !Number.isFinite(value)) {
+      return;
+    }
+    const normalizedFormKey = String(formKey);
+    setExamProgress(prev => {
+      const next = { ...prev };
+      const modeMap = { ...(next[modeKey] || {}) };
+      modeMap[normalizedFormKey] = value;
+      next[modeKey] = modeMap;
+      try {
+        localStorage.setItem(EXAM_PROGRESS_KEY, JSON.stringify(next));
+      } catch (error) {
+        console.warn("Could not persist exam progress", error);
+      }
+      return next;
+    });
+  }
 
   // Filter for practice modes
   let filteredQuestions = questions;
@@ -171,108 +279,290 @@ function App() {
     }
   }
 
+  const isExamSession = sessionMode === "exam";
+  const totalQuestions = filteredQuestions.length;
+  const examModeKeys = getExamModeKeys();
+  const examModeMeta = getExamModeMeta(examMode);
+  const primaryCategory = examModeMeta?.composite?.primaryCategory
+    ?? examModeMeta?.formCategory
+    ?? DEFAULT_CATEGORY;
+  const primaryFormOptions = getExamFormNumbers(primaryCategory);
+  const formOptions = isExamSession ? primaryFormOptions : [];
+  const examModeMap = examProgress[examMode] || {};
+  const storedExamIdx = isExamSession && selectedForm
+    ? examModeMap[String(selectedForm)] || 0
+    : 0;
+  const activeIdxRaw = isExamSession ? storedExamIdx : practiceIdx;
+  const clampedIdx = totalQuestions > 0
+    ? Math.min(Math.max(activeIdxRaw, 0), totalQuestions - 1)
+    : 0;
+  const progressPercent = totalQuestions > 0
+    ? Math.round((clampedIdx / totalQuestions) * 100)
+    : 0;
+  const questionCounterDisplay = totalQuestions > 0 ? clampedIdx + 1 : 0;
+  const examNeedsSelection = isExamSession && !selectedForm;
+
+  function openMenu(view = "mode") {
+    setMenuView(view);
+    setIsMenuOpen(true);
+  }
+
+  useEffect(() => {
+    if (isMenuOpen && menuContentRef.current) {
+      menuContentRef.current.scrollTop = 0;
+    }
+  }, [isMenuOpen, menuView]);
+
+  useEffect(() => {
+    if (isMenuOpen && menuContentRef.current) {
+      menuContentRef.current.scrollTop = 0;
+    }
+  }, [isMenuOpen, menuView]);
+
   // Reset state when mode changes (and store progress)
   useEffect(() => {
-    setIdx(0);
+    setPracticeIdx(0);
     setShowResult(false);
     setScore(0);
     setUserAnswers([]);
     // Don't reset mistakes here!
   }, [practiceMode]);
 
+  useEffect(() => {
+    if (totalQuestions <= 0) {
+      return;
+    }
+    if (!isExamSession) {
+      if (practiceIdx >= totalQuestions) {
+        setPracticeIdx(Math.max(totalQuestions - 1, 0));
+      }
+    } else if (selectedForm) {
+      if (storedExamIdx >= totalQuestions) {
+        updateExamProgress(examMode, selectedForm, Math.max(totalQuestions - 1, 0));
+      }
+    }
+  }, [isExamSession, practiceIdx, storedExamIdx, totalQuestions, examMode, selectedForm]);
+
   function handleAnswer(isCorrect) {
-    const qId = filteredQuestions[idx].id;
+    const currentSet = filteredQuestions;
+    if (!currentSet.length) return;
+
+    const modeMap = examProgress[examMode] || {};
+    const storedExamIdx = selectedForm ? modeMap[String(selectedForm)] : 0;
+    const activeIdx = isExamSession ? storedExamIdx || 0 : practiceIdx;
+    const clampedIdx = currentSet.length > 0
+      ? Math.min(Math.max(activeIdx, 0), currentSet.length - 1)
+      : 0;
+
+    const currentQuestion = currentSet[clampedIdx];
+    if (!currentQuestion) return;
+
+    const qId = currentQuestion.id;
     if (!isCorrect) {
       setMistakes(m => ({ ...m, [qId]: (m[qId] || 0) + 1 }));
     }
-    setUserAnswers([...userAnswers, isCorrect]);
-    if (isCorrect) setScore(score + 1);
-    if (idx < filteredQuestions.length - 1) setIdx(idx + 1);
-    else setShowResult(true);
+    setUserAnswers(prev => [...prev, isCorrect]);
+
+    const updatedScore = isCorrect ? score + 1 : score;
+    setScore(updatedScore);
+
+    const isLastQuestion = clampedIdx >= currentSet.length - 1;
+
+    if (isLastQuestion) {
+      if (sessionMode === "exam" && selectedForm) {
+        recordExamResult(examMode, selectedForm, updatedScore, currentSet.length);
+        updateExamProgress(examMode, selectedForm, 0);
+      } else {
+        setPracticeIdx(0);
+      }
+      setShowResult(true);
+    } else {
+      const nextIdx = clampedIdx + 1;
+      if (sessionMode === "exam" && selectedForm) {
+        updateExamProgress(examMode, selectedForm, nextIdx);
+      } else {
+        setPracticeIdx(nextIdx);
+      }
+    }
   }
 
   function restart() {
-    setIdx(0);
+    if (sessionMode === "exam" && selectedForm) {
+      updateExamProgress(examMode, selectedForm, 0);
+    } else {
+      setPracticeIdx(0);
+    }
     setScore(0);
     setShowResult(false);
     setUserAnswers([]);
-    // idx will be stored in localStorage due to the effect
   }
 
   // For demo: clear progress (optional button)
   function clearProgress() {
+    if (!window.confirm("Fortschritt wirklich komplett löschen?")) return;
+
     localStorage.clear();
-    window.location.reload();
+
+    if (isExamSession && selectedForm) {
+      updateExamProgress(examMode, selectedForm, 0);
+      setScore(0);
+      setShowResult(false);
+      setUserAnswers([]);
+      setIsMenuOpen(false);
+    } else {
+      setPracticeIdx(0);
+      setScore(0);
+      setShowResult(false);
+      setUserAnswers([]);
+    }
   }
-
-  const totalQuestions = filteredQuestions.length;
-  const progressPercent = totalQuestions > 0
-    ? Math.round((idx / totalQuestions) * 100)
-    : 0;
-  const questionCounterDisplay = Math.min(idx + 1, Math.max(totalQuestions, 1));
-
-  const examModeKeys = getExamModeKeys();
-  const examModeMeta = getExamModeMeta(examMode);
-  const primaryCategory = examModeMeta?.composite?.primaryCategory
-    ?? examModeMeta?.formCategory
-    ?? DEFAULT_CATEGORY;
-  const supplementCategory = examModeMeta?.composite?.supplementCategory ?? null;
-
-  const formOptions = sessionMode === "exam"
-    ? getExamFormNumbers(primaryCategory)
-    : [];
-  const supplementOptions = supplementCategory
-    ? getExamFormNumbers(supplementCategory)
-    : [];
-  const isExamSession = sessionMode === "exam";
-  const examNeedsSelection = isExamSession && (
-    (examMode === "AMS" ? !(selectedForm && selectedSupplement) : !selectedForm)
-  );
 
   return (
     <div className="container">
-      {(!sessionMode || sessionMode === "welcome") && (
+      {isMenuOpen && (
         <div className="welcome-overlay">
-          <div className="welcome-card">
-            <div className="welcome-header">
-              <span className="logo badge-logo">⚓️</span>
-              <h2>Willkommen an Bord!</h2>
-              <p>Wie möchtest du trainieren?</p>
-            </div>
-            <div className="welcome-actions">
-              <button
-                className="mode-card"
-                onClick={() => {
-                  setSessionMode("practice");
-                }}
-              >
-                <span className="mode-icon">📘</span>
-                <h3>Übungsmodus</h3>
-                <p>Alle Fragen oder gezielt falsch beantwortete wiederholen.</p>
-              </button>
-              <button
-                className="mode-card"
-                onClick={() => {
-                  setSessionMode("exam");
-                }}
-              >
-                <span className="mode-icon">🧭</span>
-                <h3>Fragebogen</h3>
-                <p>Original Prüfungsbögen (Motor &amp; Segeln) simulieren.</p>
-              </button>
-            </div>
-            <div className="welcome-footer">
-              <button className="link-button" onClick={() => setIsAboutOpen(true)}>
-                Über die App
-              </button>
-            </div>
+          <div className="welcome-card" ref={menuContentRef}>
+            <button
+              type="button"
+              className="menu-close"
+              aria-label="Menü schließen"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              ×
+            </button>
+            {menuView === "mode" && (
+              <>
+                <div className="welcome-header">
+                  <span className="logo badge-logo">⚓️</span>
+                  <h2>Willkommen an Bord!</h2>
+                  <p>Wähle deinen Modus oder setze dein Training fort.</p>
+                </div>
+                {sessionMode && (
+                  <div className="menu-resume">
+                    <div className="menu-resume-text">
+                      <span className="menu-resume-label">Aktueller Modus</span>
+                      <strong>
+                        {sessionMode === "practice"
+                          ? "Übungsmodus"
+                          : examModeMeta?.label || "Fragebogen"}
+                      </strong>
+                      {sessionMode === "practice" && totalQuestions > 0 && (
+                        <span>
+                          Fortschritt: {questionCounterDisplay} / {totalQuestions}
+                        </span>
+                      )}
+                      {sessionMode === "exam" && examModeMeta && selectedForm && (
+                        <span>
+                          Bogen {selectedForm} · {examModeMeta.questionCount} Fragen
+                        </span>
+                      )}
+                    </div>
+                    <div className="menu-resume-actions">
+                      <button className="primary-button" onClick={() => setIsMenuOpen(false)}>
+                        Weiter
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="welcome-actions">
+                  <button
+                    className="mode-card"
+                    onClick={() => {
+                      setSessionMode("practice");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <span className="mode-icon">📘</span>
+                    <h3>Übungsmodus</h3>
+                    <p>Alle Fragen oder gezielt falsch beantwortete wiederholen.</p>
+                  </button>
+                  <button
+                    className="mode-card"
+                    onClick={() => {
+                      setSessionMode("exam");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <span className="mode-icon">🧭</span>
+                    <h3>Fragebogen</h3>
+                    <p>Original Prüfungsbögen (Motor &amp; Segeln) simulieren.</p>
+                  </button>
+                  <button
+                    className="mode-card"
+                    onClick={() => setMenuView("stats")}
+                  >
+                    <span className="mode-icon">📊</span>
+                    <h3>Statistiken</h3>
+                    <p>Überblick über deine Ergebnisse in allen Fragebögen.</p>
+                  </button>
+                </div>
+                <div className="welcome-footer">
+                  <button
+                    className="link-button"
+                    onClick={() => {
+                      setIsAboutOpen(true);
+                      setMenuView("mode");
+                    }}
+                  >
+                    Über die App
+                  </button>
+                </div>
+              </>
+            )}
+            {menuView === "stats" && (
+              <div className="menu-stats-page">
+                <div className="menu-stats-header">
+                  <div>
+                    <span className="menu-resume-label">Statistiken</span>
+                    <h3>Deine Fragebogen-Ergebnisse</h3>
+                  </div>
+                </div>
+                {getExamModeKeys().map(modeKey => {
+                  const meta = getExamModeMeta(modeKey);
+                  const category = meta?.composite?.primaryCategory
+                    ?? meta?.formCategory
+                    ?? DEFAULT_CATEGORY;
+                  const forms = getExamFormNumbers(category);
+                  if (!forms.length) return null;
+                  return (
+                    <section className="menu-stats-section" key={`stats-${modeKey}`}>
+                      <header>
+                        <h4>{meta?.label ?? modeKey}</h4>
+                        {meta?.description && <p>{meta.description}</p>}
+                      </header>
+                      <ExamStatsPanel
+                        examMode={modeKey}
+                        stats={examStats}
+                        formOptions={forms}
+                        selectedForm={modeKey === examMode ? selectedForm : null}
+                      />
+                      <div className="menu-stats-section-actions">
+                        <button
+                          type="button"
+                          className="link-button"
+                          onClick={() => {
+                            setSessionMode("exam");
+                            setSelectedForm(String(forms[0]));
+                            setExamMode(modeKey);
+                            setMenuView("mode");
+                            setIsMenuOpen(false);
+                          }}
+                        >
+                          Diesen Modus starten
+                        </button>
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          {isAboutOpen && (
-            <AboutOverlay onClose={() => setIsAboutOpen(false)} />
-          )}
         </div>
       )}
-      {isExamSession && (
+      {isAboutOpen && (
+        <AboutOverlay onClose={() => setIsAboutOpen(false)} />
+      )}
+      {isExamSession && !isMenuOpen && (
         <div className="exam-toolbar">
           <div className="toolbar-group">
             <label>Version</label>
@@ -293,7 +583,7 @@ function App() {
               })}
             </select>
           </div>
-          {formOptions.length > 0 && (
+          {isExamSession && formOptions.length > 0 && (
             <div className="toolbar-group">
               <label>
                 {examMode === "S"
@@ -307,38 +597,16 @@ function App() {
                 onChange={event => {
                   const value = event.target.value;
                   setSelectedForm(value);
-                  setIdx(0);
                   setShowResult(false);
+                  setScore(0);
+                  setUserAnswers([]);
                   if (examMode === "AMS") {
-                    const fallbackSupplement = value ? `E${value}` : "";
-                    if (fallbackSupplement && !selectedSupplement) {
-                      setSelectedSupplement(fallbackSupplement);
-                    }
+                    setSelectedSupplement(value ? `E${value}` : "");
                   }
                 }}
               >
                 <option value="">Bitte wählen</option>
                 {formOptions.map(option => (
-                  <option key={String(option)} value={String(option)}>
-                    {String(option)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          {examMode === "AMS" && supplementOptions.length > 0 && (
-            <div className="toolbar-group">
-              <label>Segel-Zusatzbogen</label>
-              <select
-                value={selectedSupplement}
-                onChange={event => {
-                  setSelectedSupplement(event.target.value);
-                  setIdx(0);
-                  setShowResult(false);
-                }}
-              >
-                <option value="">Bitte wählen</option>
-                {supplementOptions.map(option => (
                   <option key={String(option)} value={String(option)}>
                     {String(option)}
                   </option>
@@ -352,17 +620,42 @@ function App() {
                 {examModeMeta.questionCount} Fragen · {examModeMeta.timeMinutes} Min
                 {examModeMeta.maxWrong != null && ` · max. ${examModeMeta.maxWrong} Fehler`}
               </span>
+              <button
+                type="button"
+                className="link-button"
+                onClick={() => {
+                  if (!selectedForm) return;
+                  const label = formatFormLabel(examMode, selectedForm);
+                  if (window.confirm(`${label}: Fortschritt wirklich zurücksetzen?`)) {
+                    updateExamProgress(examMode, selectedForm, 0);
+                    setScore(0);
+                    setShowResult(false);
+                    setUserAnswers([]);
+                  }
+                }}
+                disabled={!selectedForm}
+              >
+                Fortschritt zurücksetzen
+              </button>
             </div>
           )}
           <button
             className="link-button"
-            onClick={() => setSessionMode("welcome")}
+            onClick={() => openMenu("mode")}
           >
             Zurück
           </button>
         </div>
       )}
       <header className="header">
+        <button
+          className="menu-toggle"
+          type="button"
+          aria-label="Menü öffnen"
+          onClick={() => openMenu("mode")}
+        >
+          ☰
+        </button>
         <div className="brand">
           <span className="logo">⚓️</span>
           <h1>SBF Binnen Trainer</h1>
@@ -430,7 +723,11 @@ function App() {
                 </button>
               </>
             )}
-            <button className="secondary-button" onClick={clearProgress}>
+            <button
+              className="secondary-button"
+              onClick={clearProgress}
+              disabled={clampedIdx === 0 && !showResult}
+            >
               Fortschritt löschen
             </button>
             <button className="link-button" onClick={() => setIsAboutOpen(true)}>
@@ -449,9 +746,9 @@ function App() {
           </div>
           <div className="card">
             <Question
-              data={filteredQuestions[idx]}
+              data={filteredQuestions[clampedIdx]}
               onAnswer={handleAnswer}
-              qNum={idx + 1}
+              qNum={clampedIdx + 1}
               total={filteredQuestions.length}
             />
           </div>
@@ -462,6 +759,71 @@ function App() {
 }
 
 export default App;
+
+function ExamStatsPanel({ examMode, stats, formOptions, selectedForm }) {
+  const keys = (formOptions || []).map(option => String(option));
+  if (!keys.length) return null;
+
+  const modeStats = (stats && stats[examMode]) || {};
+
+  return (
+    <div className="exam-stats">
+      {keys.map(key => {
+        const record = modeStats[key];
+        const bestPercentValue = record && typeof record.bestPercent === "number" && record.bestPercent >= 0
+          ? Math.round(Math.min(Math.max(record.bestPercent * 100, 0), 100))
+          : null;
+        const lastPercentValue = record && record.lastTotal
+          ? Math.round(Math.min(Math.max((record.lastCorrect / record.lastTotal) * 100, 0), 100))
+          : null;
+        const barWidth = bestPercentValue != null ? Math.min(Math.max(bestPercentValue, 4), 100) : 0;
+        const isSelected = String(selectedForm || "") === key;
+
+        return (
+          <div className={`exam-stat-card${isSelected ? " selected" : ""}`} key={`${examMode}-${key}`}>
+            <div className="exam-stat-header">
+              <span>{formatFormLabel(examMode, key)}</span>
+              <span>{bestPercentValue != null ? `${bestPercentValue}%` : "–"}</span>
+            </div>
+            <div className="exam-stat-progress">
+              <span style={{ width: `${barWidth}%` }} />
+            </div>
+            <div className="exam-stat-meta">
+              {record ? (
+                <>
+                  <span>Beste Runde: {record.bestCorrect}/{record.bestTotal}</span>
+                  <span>
+                    Letzte Runde: {record.lastCorrect}/{record.lastTotal}
+                    {lastPercentValue != null ? ` (${lastPercentValue}%)` : ""}
+                  </span>
+                  <span>Versuche: {record.attempts}</span>
+                </>
+              ) : (
+                <span>Noch keine Versuche</span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function formatFormLabel(mode, key) {
+  const numericPart = key.replace(/[^0-9]/g, "");
+  switch (mode) {
+    case "AM":
+      return `Bogen ${numericPart || key}`;
+    case "S":
+      return `Segel ${numericPart || key}`;
+    case "AMS":
+      return `Kombi ${numericPart || key} + E${numericPart || key}`;
+    case "Supplement":
+      return `Zusatz ${numericPart || key}`;
+    default:
+      return `Bogen ${key}`;
+  }
+}
 
 function AboutOverlay({ onClose }) {
   return (
