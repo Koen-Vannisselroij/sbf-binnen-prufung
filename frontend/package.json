@@ -13,6 +13,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "validate:forms": "node scripts/validateExamForms.mjs",
     "cap:add:android": "cap add android",
     "cap:copy": "cap copy",
     "cap:open:android": "cap open android",
