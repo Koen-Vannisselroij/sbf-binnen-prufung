@@ -130,6 +130,10 @@ Pipfile.lock
 requirements.txt
 requirements-dev.txt
 
+# Local docs and prep notes
+app_preparation.md
+docs/
+
 # Ignore by convention
 # Uncomment if you want to ignore all dotfiles except .gitignore
 # .*
