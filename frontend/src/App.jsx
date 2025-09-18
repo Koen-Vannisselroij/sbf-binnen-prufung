@@ -663,17 +663,19 @@ function App() {
         </div>
       )}
       <header className="header">
-        <button
-          className="menu-toggle"
-          type="button"
-          aria-label="Menü öffnen"
-          onClick={() => openMenu("mode")}
-        >
-          ☰
-        </button>
-        <div className="brand">
-          <span className="logo">⚓️</span>
-          <h1>SBF Binnen Trainer</h1>
+        <div className="header-inner">
+          <div className="brand">
+            <span className="logo">⚓️</span>
+            <h1>SBF Binnen Trainer</h1>
+          </div>
+          <button
+            className="menu-button"
+            type="button"
+            aria-label="Menü öffnen"
+            onClick={() => openMenu("mode")}
+          >
+            ☰
+          </button>
         </div>
         <p className="subtitle">Sportbootführerschein Binnen – Üben & Verstehen</p>
       </header>
