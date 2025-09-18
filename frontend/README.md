@@ -1,7 +1,7 @@
 SBF Binnen Trainer — Frontend (Vite + React)
 ===========================================
 
-This is the web frontend for the SBF Binnen learning app. It renders multiple‑choice questions, tracks progress locally, and shows tips/explanations when you answer incorrectly.
+This is the web frontend for the SBF Binnen learning app. It renders multiple‑choice questions, tracks progress locally, and shows tips/explanations when you answer incorrectly. A mobile‑friendly menu lets you switch between practice filters, simulate official Fragebogen, and view statistics.
 
 Quick Start
 - Prerequisites: Node.js 18+
@@ -30,8 +30,8 @@ Scripts
 - `cap:*` — Capacitor integration helpers
 
 Notes
-- Local progress is stored in `localStorage` (keys: `sbf-mistakes`, `sbf-mode`, `sbf-idx`).
-- The UI reveals the correct answer after a mistake and can show a tip/explanation if available.
+- Local progress is stored in `localStorage` (keys include `sbf-mistakes`, `sbf-practice-mode`, `sbf-practice-idx`, `sbf-practice-progress`, `sbf-exam-mode`, `sbf-selected-form`, `sbf-selected-supplement`, `sbf-exam-progress`, `sbf-exam-stats`).
+- The UI reveals the correct answer after a mistake, can show a tip/explanation, and offers per‑Fragebogen statistics.
 
 Attribution & Disclaimer
 - Questions are derived from the official SBF question catalog published on ELWIS. This is an unofficial educational project and is not affiliated with BMDV/ELWIS. All rights remain with their respective owners. If you represent the rights holder and want content removed, please open an issue in the repository and it will be addressed promptly.

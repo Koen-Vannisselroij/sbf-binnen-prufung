@@ -3,6 +3,14 @@ SBF Binnen Prüfung — Learning App
 
 An open‑source learning app for the Sportbootführerschein Binnen (SBF Binnen). It lets you practice multiple‑choice questions, shows instant feedback, reveals the correct answer when you make a mistake, and can include tips and explanations to help you understand the “why”.
 
+### Highlights
+
+- Practice all 300 questions or focus on mistakes without losing your place
+- Simulate the original Fragebogen (Motor, Segeln, Kombi, Segel‑Ergänzung)
+- View per‑Fragebogen statistics and best scores in a dedicated menu
+- Full offline support: all progress stays on the device (localStorage)
+- Mobile‑first layout with large tap targets and a quick “hamburger” menu
+
 I was mainly annoyed by the fact that there is an app available which costs 30 euro's where the only usable feature is that it gives tips to the end user if a question is wrong. I generated tips using LLM's and created my own version. It does not have images yet.
 I used a non-polished version of this to pass the exam myself.
 
@@ -78,6 +86,14 @@ Common commands from `frontend/`:
 - Doctor check: `npm run cap:doctor`
 
 If you prefer to exclude the native project from the repo, you can delete `frontend/android` locally and regenerate with `npx cap add android` (the `.gitignore` already excludes build/signing artifacts).
+
+Local Data & Keys
+- `sbf-mistakes` — question‑id → incorrect count
+- `sbf-practice-mode` / `sbf-mode` — last selected practice filter or overall session mode
+- `sbf-practice-idx` / `sbf-practice-progress` — saved position in the practice sets
+- `sbf-exam-mode`, `sbf-selected-form`, `sbf-selected-supplement` — current Fragebogen selections
+- `sbf-exam-progress` — resume point per Fragebogen
+- `sbf-exam-stats` — per‑form attempt history (best/last scores)
 
 Testing
 - Python tests: `python -m unittest discover -s tests -v`
