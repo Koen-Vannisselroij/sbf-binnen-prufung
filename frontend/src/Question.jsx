@@ -99,7 +99,7 @@ function Question({ data, onAnswer, qNum, total }) {
               )}
             </div>
             <div className="tip-modal-actions">
-              <button className="primary-button" onClick={handleContinue}>Weiter</button>
+              <button className="secondary-button" onClick={() => setIsTipOverlayOpen(false)}>Schließen</button>
             </div>
           </div>
         </div>
