@@ -8,14 +8,14 @@ function Question({ data, onAnswer, qNum, total }) {
 
   const [selected, setSelected] = useState(null);
   const [showCorrect, setShowCorrect] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const hasExplanation = !!data.explanation;
+  const [isTipOverlayOpen, setIsTipOverlayOpen] = useState(false);
+  const hasSupplemental = !!(data.tip || data.explanation);
 
   function handleClick(optionIdx) {
     const isCorrect = optionIdx === newCorrectIdx;
     setSelected(optionIdx);
     setShowCorrect(true);
-    if (!isCorrect) setShowExplanation(true);
+    setIsTipOverlayOpen(false);
   }
 
   function handleContinue() {
@@ -24,7 +24,7 @@ function Question({ data, onAnswer, qNum, total }) {
     onAnswer(isCorrect);
     setSelected(null);
     setShowCorrect(false);
-    setShowExplanation(false); // Hide explanation on next question
+    setIsTipOverlayOpen(false);
   }
 
   return (
@@ -67,26 +67,41 @@ function Question({ data, onAnswer, qNum, total }) {
             : `❌ Falsch! Korrekt: "${shuffled[newCorrectIdx]}"`}
         </div>
       )}
-      {/* Auto-show tip/explanation on mistake if available */}
-      {showExplanation && selected !== newCorrectIdx && (data.tip || data.explanation) && (
-        <div style={{ marginTop: 12 }}>
-          {data.tip && (
-            <div className="tip-card" style={{ marginBottom: 8 }}>
-              <strong>Skipper‑Tipp:</strong>
-              <div style={{ marginTop: 6 }}>{data.tip}</div>
-            </div>
+      {showCorrect && (
+        <div className="question-actions">
+          {selected !== newCorrectIdx && hasSupplemental && (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setIsTipOverlayOpen(true)}
+            >
+              Tipps & Hintergrund
+            </button>
           )}
-          {data.explanation && (
-            <div className="exp-card">
-              <strong>Hintergrund:</strong>
-              <div style={{ marginTop: 6 }}>{data.explanation}</div>
-            </div>
-          )}
+          <button className="primary-button" onClick={handleContinue}>Weiter</button>
         </div>
       )}
-      {showCorrect && (
-        <div style={{ marginTop: 16 }}>
-          <button className="primary-button" onClick={handleContinue}>Weiter</button>
+      {isTipOverlayOpen && hasSupplemental && (
+        <div className="tip-overlay" role="dialog" aria-modal="true">
+          <div className="tip-modal">
+            <div className="tip-modal-content">
+              {data.tip && (
+                <div className="tip-card" style={{ marginBottom: 12 }}>
+                  <strong>Skipper‑Tipp:</strong>
+                  <div style={{ marginTop: 6 }}>{data.tip}</div>
+                </div>
+              )}
+              {data.explanation && (
+                <div className="exp-card">
+                  <strong>Hintergrund:</strong>
+                  <div style={{ marginTop: 6 }}>{data.explanation}</div>
+                </div>
+              )}
+            </div>
+            <div className="tip-modal-actions">
+              <button className="primary-button" onClick={handleContinue}>Weiter</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
