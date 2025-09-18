@@ -78,8 +78,8 @@ body::before {
   }
 
   .menu-toggle {
-    top: calc(env(safe-area-inset-top, 0px) + 10px);
-    right: calc(env(safe-area-inset-right, 0px) + 10px);
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+    right: calc(env(safe-area-inset-right, 0px) + 16px);
   }
 
   .controls {
@@ -131,8 +131,8 @@ body::before {
 
 .menu-toggle {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 14px);
-  right: calc(env(safe-area-inset-right, 0px) + 14px);
+  top: calc(env(safe-area-inset-top, 0px) + 20px);
+  right: calc(env(safe-area-inset-right, 0px) + 20px);
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid var(--border-soft);
   border-radius: 12px;
@@ -146,6 +146,7 @@ body::before {
   color: var(--text);
   transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease;
   z-index: 12;
+  pointer-events: auto;
 }
 
 .menu-toggle:hover {
@@ -625,6 +626,8 @@ body::before {
   background: var(--control-bg);
   border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-soft);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .controls button {
@@ -685,11 +688,18 @@ body::before {
 
 .session-controls {
   margin-top: auto;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
 }
 
 .session-controls .controls {
   width: 100%;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 12px;
+}
+
+.session-controls .controls .secondary-button,
+.session-controls .controls .link-button {
+  margin-left: 0;
 }
 
 .progress-meta {
