@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal animated SVG: rocking boat + subtle sail motion. Primary color: #0d9ad9 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120" role="img" aria-label="Loading">
+  <!-- Position the boat at center-top of waterline -->
+  <g transform="translate(100,72)">
+    <!-- Rotating group (rocking). Pivot around waterline (0,20). -->
+    <g id="rock">
+      <!-- hull -->
+      <path d="M-60,20 C-30,34 30,34 60,20 C50,40 -50,40 -60,20 Z" fill="#0d9ad9"/>
+      <!-- deck line -->
+      <path d="M-60,20 C-30,28 30,28 60,20" fill="none" stroke="white" stroke-width="2" opacity="0.8"/>
+
+      <!-- mast -->
+      <rect x="-2" y="-48" width="4" height="68" fill="#0d9ad9"/>
+
+      <!-- main sail (right) -->
+      <g id="main" transform="translate(0,0)">
+        <path d="M0,-46 L0,20 L50,20 Z" fill="white"/>
+        <!-- slight flap around top of mast -->
+        <animateTransform attributeName="transform" type="rotate"
+                          values="-3 0 -46; 3 0 -46; -3 0 -46"
+                          dur="1.6s" repeatCount="indefinite"/>
+      </g>
+
+      <!-- fore sail (left) -->
+      <g id="fore" transform="translate(0,0)" opacity="0.97">
+        <path d="M0,-34 L0,20 L-40,20 Z" fill="white"/>
+        <animateTransform attributeName="transform" type="rotate"
+                          values="2 0 -34; -2 0 -34; 2 0 -34"
+                          dur="1.4s" repeatCount="indefinite"/>
+      </g>
+
+      <!-- Rock the whole boat around waterline pivot (0,20) -->
+      <animateTransform attributeName="transform" type="rotate"
+                        values="-4 0 20; 4 0 20; -4 0 20"
+                        dur="3s" repeatCount="indefinite"/>
+    </g>
+  </g>
+</svg>

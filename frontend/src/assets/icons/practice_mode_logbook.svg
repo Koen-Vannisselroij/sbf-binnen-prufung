@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d9ad9"/>
+      <stop offset="100%" stop-color="#083a74"/>
+    </linearGradient>
+  </defs>
+  <g stroke="#0b3a5a" stroke-width="22" fill="white">
+    <!-- book shape -->
+    <path d="M140 240 Q140 200, 190 200 H470 Q520 200, 520 250 V780 Q520 820, 470 820 H190 Q140 820, 140 780 Z"/>
+    <path d="M884 240 Q884 200, 834 200 H554 Q504 200, 504 250 V780 Q504 820, 554 820 H834 Q884 820, 884 780 Z"/>
+    <!-- spine notch -->
+    <circle cx="512" cy="820" r="16" fill="#0b3a5a"/>
+  </g>
+  <!-- lines on left page -->
+  <g stroke="#0b3a5a" stroke-width="10" opacity="0.6">
+    <line x1="190" y1="320" x2="470" y2="320"/>
+    <line x1="190" y1="380" x2="470" y2="380"/>
+    <line x1="190" y1="440" x2="470" y2="440"/>
+    <line x1="190" y1="500" x2="470" y2="500"/>
+    <line x1="190" y1="560" x2="470" y2="560"/>
+  </g>
+  <!-- compass rose overlay -->
+  <g transform="translate(560,360)">
+    <circle cx="160" cy="160" r="150" fill="url(#teal)" stroke="#0b3a5a" stroke-width="16"/>
+    <g fill="white" stroke="#0b3a5a" stroke-width="12">
+      <polygon points="160,20 184,160 160,300 136,160"/>
+      <polygon points="20,160 160,184 300,160 160,136"/>
+    </g>
+    <circle cx="160" cy="160" r="24" fill="white" stroke="#0b3a5a" stroke-width="12"/>
+  </g>
+</svg>

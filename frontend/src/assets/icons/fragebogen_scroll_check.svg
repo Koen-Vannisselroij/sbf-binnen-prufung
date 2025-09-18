@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bfeaff"/>
+      <stop offset="100%" stop-color="#e9f7ff"/>
+    </linearGradient>
+  </defs>
+  <!-- scroll -->
+  <g stroke="#0d5f99" stroke-width="22" fill="url(#paper)">
+    <path d="M210 280 q0 -60 70 -60 h464 q70 0 70 60 v480 q0 60 -70 60 H280 q-70 0 -70 -60 Z"/>
+    <path d="M210 280 q0 60 70 60" fill="none"/>
+    <path d="M814 760 q0 -60 -70 -60" fill="none"/>
+    <rect x="210" y="240" width="120" height="80" rx="40"/>
+    <rect x="694" y="740" width="120" height="80" rx="40"/>
+  </g>
+  <!-- map glyphs -->
+  <g stroke="#0d9ad9" stroke-width="18" fill="none" opacity="0.8">
+    <path d="M320 430 h320"/>
+    <path d="M320 500 h260"/>
+    <path d="M320 570 h300"/>
+  </g>
+  <!-- checkmark badge -->
+  <g transform="translate(680,610)">
+    <circle cx="140" cy="140" r="120" fill="#0d9ad9" stroke="#0d5f99" stroke-width="16"/>
+    <path d="M80 140 l60 60 l100 -120" fill="none" stroke="white" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

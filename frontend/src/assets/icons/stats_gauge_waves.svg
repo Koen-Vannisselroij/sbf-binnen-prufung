@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bff0ff"/>
+      <stop offset="100%" stop-color="#86d7ff"/>
+    </linearGradient>
+  </defs>
+  <circle cx="512" cy="512" r="420" fill="url(#sky)" stroke="#0b3a5a" stroke-width="26"/>
+  <!-- waves -->
+  <g fill="none" stroke="#1386b8" stroke-width="30" opacity="0.9">
+    <path d="M240 640 q136 80 272 0 q136 -80 272 0"/>
+    <path d="M240 700 q136 80 272 0 q136 -80 272 0" opacity="0.8"/>
+  </g>
+  <!-- gauge needle -->
+  <g transform="rotate(-20 512 512)">
+    <circle cx="512" cy="512" r="20" fill="#0b3a5a"/>
+    <path d="M512 512 L870 540 Q780 500 720 480 Z" fill="#ffd27a" stroke="#0b3a5a" stroke-width="10"/>
+  </g>
+  <!-- sparkles -->
+  <g fill="white" stroke="#0b3a5a" stroke-width="8" opacity="0.9">
+    <path d="M360 320 l20 40 l40 20 l-40 20 l-20 40 l-20 -40 l-40 -20 l40 -20 z"/>
+    <path d="M680 300 l16 32 l32 16 l-32 16 l-16 32 l-16 -32 l-32 -16 l32 -16 z"/>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sea" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#0d9ad9"/>
+      <stop offset="100%" stop-color="#083a74"/>
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="230" fill="url(#sea)" stroke="#0b3a5a" stroke-width="14"/>
+  <!-- light beam -->
+  <path d="M256 180 L480 220 L480 292 L256 260 Z" fill="#ffeaa7" opacity="0.85"/>
+  <!-- lighthouse -->
+  <g fill="white" stroke="#0b3a5a" stroke-width="10">
+    <rect x="238" y="200" width="36" height="140" rx="6"/>
+    <rect x="224" y="340" width="64" height="44" rx="8"/>
+    <rect x="226" y="180" width="60" height="24" rx="6"/>
+    <rect x="240" y="160" width="32" height="16" rx="4"/>
+    <rect x="250" y="236" width="12" height="24"/>
+  </g>
+</svg>
