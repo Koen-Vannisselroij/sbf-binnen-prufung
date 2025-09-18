@@ -445,8 +445,10 @@ function App() {
   return (
     <div className="container">
       {isMenuOpen && (
-        <div className="welcome-overlay">
-          <div className="welcome-card" ref={menuContentRef}>
+        <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />
+      )}
+      <div className={`menu-popover ${isMenuOpen ? 'open' : ''}`} ref={menuContentRef}>
+        <div className="menu-card">
             <button
               type="button"
               className="menu-close"
@@ -581,9 +583,8 @@ function App() {
                 })}
               </div>
             )}
-          </div>
         </div>
-      )}
+      </div>
       {isAboutOpen && (
         <AboutOverlay onClose={() => setIsAboutOpen(false)} />
       )}
