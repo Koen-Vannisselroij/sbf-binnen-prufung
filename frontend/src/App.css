@@ -93,6 +93,15 @@ body::before {
     justify-content: center;
   }
 
+  .session-content {
+    min-height: calc(100vh - 180px);
+    gap: 12px;
+  }
+
+  .session-controls .controls {
+    gap: 10px;
+  }
+
   .menu-resume {
     flex-direction: column;
     align-items: flex-start;
@@ -615,6 +624,28 @@ body::before {
 
 .controls .secondary-button {
   margin-left: auto;
+}
+
+.session-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 60vh;
+}
+
+.question-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.session-controls {
+  margin-top: auto;
+}
+
+.session-controls .controls {
+  width: 100%;
+  justify-content: space-between;
 }
 
 .progress-meta {

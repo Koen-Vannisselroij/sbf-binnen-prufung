@@ -707,67 +707,71 @@ function App() {
           </div>
         </div>
       ) : (
-        <>
-          <div className="controls">
-            {isExamSession ? (
-              <span className="controls-hint">
-                {examModeMeta?.label ?? "Fragebogen"}
-                {": "}
-                {selectedForm || "–"}
-                {examMode === "AMS" && ` + ${selectedSupplement || "–"}`}
+        <div className="session-content">
+          <div className="question-section">
+            <div className="progress-meta">
+              <span>Fortschritt</span>
+              <span>
+                {progressPercent}% · Frage {questionCounterDisplay} / {totalQuestions}
               </span>
-            ) : (
-              <>
-                <button
-                  onClick={() => setPracticeMode("all")}
-                  data-active={practiceMode === "all" ? "true" : undefined}
-                >
-                  Alle Fragen
-                </button>
-                <button
-                  onClick={() => setPracticeMode("wrong")}
-                  data-active={practiceMode === "wrong" ? "true" : undefined}
-                >
-                  Nur falsche (mind. 1x)
-                </button>
-                <button
-                  onClick={() => setPracticeMode("wrong-twice")}
-                  data-active={practiceMode === "wrong-twice" ? "true" : undefined}
-                >
-                  Nur falsche (mind. 2x)
-                </button>
-              </>
-            )}
-            <button
-              className="secondary-button"
-              onClick={clearProgress}
-              disabled={clampedIdx === 0 && !showResult}
-            >
-              Fortschritt löschen
-            </button>
-            <button className="link-button" onClick={() => setIsAboutOpen(true)}>
-              Über die App
-            </button>
+            </div>
+            <div className="progress">
+              <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
+              <div className="ship-marker" style={{ left: `calc(${progressPercent}% - 12px)` }}>⛵</div>
+            </div>
+            <div className="card">
+              <Question
+                data={filteredQuestions[clampedIdx]}
+                onAnswer={handleAnswer}
+                qNum={clampedIdx + 1}
+                total={filteredQuestions.length}
+              />
+            </div>
           </div>
-          <div className="progress-meta">
-            <span>Fortschritt</span>
-            <span>
-              {progressPercent}% · Frage {questionCounterDisplay} / {totalQuestions}
-            </span>
+          <div className="session-controls">
+            <div className="controls">
+              {isExamSession ? (
+                <span className="controls-hint">
+                  {examModeMeta?.label ?? "Fragebogen"}
+                  {": "}
+                  {selectedForm || "–"}
+                  {examMode === "AMS" && ` + ${selectedSupplement || "–"}`}
+                </span>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setPracticeMode("all")}
+                    data-active={practiceMode === "all" ? "true" : undefined}
+                  >
+                    Alle Fragen
+                  </button>
+                  <button
+                    onClick={() => setPracticeMode("wrong")}
+                    data-active={practiceMode === "wrong" ? "true" : undefined}
+                  >
+                    Nur falsche (mind. 1x)
+                  </button>
+                  <button
+                    onClick={() => setPracticeMode("wrong-twice")}
+                    data-active={practiceMode === "wrong-twice" ? "true" : undefined}
+                  >
+                    Nur falsche (mind. 2x)
+                  </button>
+                </>
+              )}
+              <button
+                className="secondary-button"
+                onClick={clearProgress}
+                disabled={clampedIdx === 0 && !showResult}
+              >
+                Fortschritt löschen
+              </button>
+              <button className="link-button" onClick={() => setIsAboutOpen(true)}>
+                Über die App
+              </button>
+            </div>
           </div>
-          <div className="progress">
-            <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
-            <div className="ship-marker" style={{ left: `calc(${progressPercent}% - 12px)` }}>⛵</div>
-          </div>
-          <div className="card">
-            <Question
-              data={filteredQuestions[clampedIdx]}
-              onAnswer={handleAnswer}
-              qNum={clampedIdx + 1}
-              total={filteredQuestions.length}
-            />
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
