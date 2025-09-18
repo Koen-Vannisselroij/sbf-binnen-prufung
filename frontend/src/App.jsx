@@ -319,9 +319,13 @@ function App() {
   const questionCounterDisplay = totalQuestions > 0 ? clampedIdx + 1 : 0;
   const examNeedsSelection = isExamSession && !selectedForm;
 
-  function openMenu(view = "mode") {
-    setMenuView(view);
-    setIsMenuOpen(true);
+  function toggleMenu(view = "mode") {
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    } else {
+      setMenuView(view);
+      setIsMenuOpen(true);
+    }
   }
 
   useEffect(() => {
@@ -672,7 +676,7 @@ function App() {
             className="menu-button"
             type="button"
             aria-label="Menü öffnen"
-            onClick={() => openMenu("mode")}
+            onClick={() => toggleMenu("mode")}
           >
             ☰
           </button>
