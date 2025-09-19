@@ -25,6 +25,7 @@ import ExamSelectorOverlay from "./components/ExamSelectorOverlay.jsx";
 import ExamStatsPanel from "./components/ExamStatsPanel.jsx";
 import HeaderBar from "./components/HeaderBar.jsx";
 import ConfirmExitDialog from "./components/ConfirmExitDialog.jsx";
+import MenuPopover from "./components/MenuPopover.jsx";
 
 const MISTAKES_KEY = "sbf-mistakes";
 const PRACTICE_MODE_KEY = "sbf-mode";
@@ -536,154 +537,30 @@ function App() {
   return (
     <div className="container" style={containerStyle}>
       {isMenuOpen && <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />}
-      <div
-        className={`menu-popover ${isMenuOpen ? 'open' : ''}`}
-      >
-        <div className="menu-card" ref={menuContentRef}>
-            <button
-              type="button"
-              className="menu-close"
-              aria-label="Menü schließen"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              ×
-            </button>
-            {menuView === "mode" && (
-              <>
-                <div className="welcome-header">
-                  <span className="logo badge-logo">
-                    <img src={headerBadge} alt="SBF Binnen Trainer" />
-                  </span>
-                  <h2>Willkommen an Bord!</h2>
-                  <p>Wähle deinen Modus oder setze dein Training fort.</p>
-                </div>
-                {sessionMode && (
-                  <div className="menu-resume">
-                    <div className="menu-resume-text">
-                      <span className="menu-resume-label">Aktueller Modus</span>
-                      <strong>
-                        {sessionMode === "practice"
-                          ? "Übungsmodus"
-                          : examModeMeta?.label || "Fragebogen"}
-                      </strong>
-                      {sessionMode === "practice" && totalQuestions > 0 && (
-                        <span>
-                          Fortschritt: {questionCounterDisplay} / {totalQuestions}
-                        </span>
-                      )}
-                      {sessionMode === "exam" && examModeMeta && selectedForm && (
-                        <span>
-                          Bogen {selectedForm} · {examModeMeta.questionCount} Fragen
-                        </span>
-                      )}
-                    </div>
-                    <div className="menu-resume-actions">
-                      <button className="primary-button" onClick={() => setIsMenuOpen(false)}>
-                        Weiter
-                      </button>
-                    </div>
-                  </div>
-                )}
-                <div className="welcome-actions">
-                  <button
-                    className="mode-card"
-                    onClick={() => {
-                      setSessionMode("practice");
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <span className="mode-icon">
-                      <img src={practiceModeIcon} alt="Übungsmodus" />
-                    </span>
-                    <h3>Übungsmodus</h3>
-                    <p>Alle Fragen oder gezielt falsch beantwortete wiederholen.</p>
-                  </button>
-                  <button
-                    className="mode-card"
-                    onClick={() => {
-                      setSessionMode("exam");
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <span className="mode-icon">
-                      <img src={examModeIcon} alt="Fragebogen" />
-                    </span>
-                    <h3>Fragebogen</h3>
-                    <p>Original Prüfungsbögen (Motor &amp; Segeln) simulieren.</p>
-                  </button>
-                  <button
-                    className="mode-card"
-                    onClick={() => setMenuView("stats")}
-                  >
-                    <span className="mode-icon">
-                      <img src={statsModeIcon} alt="Statistiken" />
-                    </span>
-                    <h3>Statistiken</h3>
-                    <p>Überblick über deine Ergebnisse in allen Fragebögen.</p>
-                  </button>
-                </div>
-                <div className="welcome-footer">
-                  <button
-                    className="link-button"
-                    onClick={() => {
-                      setIsAboutOpen(true);
-                      setMenuView("mode");
-                    }}
-                  >
-                    Über die App
-                  </button>
-                </div>
-              </>
-            )}
-            {menuView === "stats" && (
-              <div className="menu-stats-page">
-                <div className="menu-stats-header">
-                  <div>
-                    <span className="menu-resume-label">Statistiken</span>
-                    <h3>Deine Fragebogen-Ergebnisse</h3>
-                  </div>
-                </div>
-                {getExamModeKeys().map(modeKey => {
-                  const meta = getExamModeMeta(modeKey);
-                  const category = meta?.composite?.primaryCategory
-                    ?? meta?.formCategory
-                    ?? DEFAULT_CATEGORY;
-                  const forms = getExamFormNumbers(category);
-                  if (!forms.length) return null;
-                  return (
-                    <section className="menu-stats-section" key={`stats-${modeKey}`}>
-                      <header>
-                        <h4>{meta?.label ?? modeKey}</h4>
-                        {meta?.description && <p>{meta.description}</p>}
-                      </header>
-                      <ExamStatsPanel
-                        examMode={modeKey}
-                        stats={examStats}
-                        formOptions={forms}
-                        selectedForm={modeKey === examMode ? selectedForm : null}
-                      />
-                      <div className="menu-stats-section-actions">
-                        <button
-                          type="button"
-                          className="link-button"
-                          onClick={() => {
-                            setSessionMode("exam");
-                            setSelectedForm(String(forms[0]));
-                            setExamMode(modeKey);
-                            setMenuView("mode");
-                            setIsMenuOpen(false);
-                          }}
-                        >
-                          Diesen Modus starten
-                        </button>
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
-            )}
-        </div>
-      </div>
+      <MenuPopover
+        isOpen={isMenuOpen}
+        view={menuView}
+        onClose={() => setIsMenuOpen(false)}
+        onChangeView={setMenuView}
+        sessionMode={sessionMode}
+        totalQuestions={totalQuestions}
+        questionCounterDisplay={questionCounterDisplay}
+        examModeMeta={examModeMeta}
+        selectedForm={selectedForm}
+        examMode={examMode}
+        examStats={examStats}
+        examModeKeys={getExamModeKeys()}
+        onStartPractice={() => { setSessionMode('practice'); setIsMenuOpen(false); }}
+        onStartExam={() => { setSessionMode('exam'); setIsMenuOpen(false); }}
+        onOpenAbout={() => { setIsAboutOpen(true); setMenuView('mode'); }}
+        onStartSpecificMode={(modeKey, firstForm) => {
+          setSessionMode('exam');
+          setSelectedForm(firstForm);
+          setExamMode(modeKey);
+          setMenuView('mode');
+          setIsMenuOpen(false);
+        }}
+      />
       {isAboutOpen && (
         <AboutOverlay onClose={() => setIsAboutOpen(false)} />
       )}
