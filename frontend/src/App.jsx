@@ -12,14 +12,16 @@ import {
   getExamModeFormCategories
 } from "./utils/examForms.js";
 import "./App.css";
-import headerBadge from "./assets/icons/header_badge_sailboat.svg";
-import practiceModeIcon from "./assets/icons/practice_mode_logbook.svg";
-import examModeIcon from "./assets/icons/fragebogen_scroll_check.svg";
-import statsModeIcon from "./assets/icons/stats_gauge_waves.svg";
 import hintBadge from "./assets/icons/hint_badge_lighthouse.svg";
 import progressBoat from "./assets/animations/boat_only_loading_0d9ad9.svg";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import ProgressStrip from "./components/ProgressStrip.jsx";
+import SessionControls from "./components/SessionControls.jsx";
+import ExamSelectorOverlay from "./components/ExamSelectorOverlay.jsx";
+import HeaderBar from "./components/HeaderBar.jsx";
+import ConfirmExitDialog from "./components/ConfirmExitDialog.jsx";
+import MenuPopover from "./components/MenuPopover.jsx";
 
 const MISTAKES_KEY = "sbf-mistakes";
 const PRACTICE_MODE_KEY = "sbf-mode";
@@ -63,7 +65,6 @@ function App() {
   });
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [menuView, setMenuView] = useState("mode");
-  const menuContentRef = useRef(null);
   const [examCategory, setExamCategory] = useState(() => {
     return localStorage.getItem(MODE_CATEGORY_KEY) || DEFAULT_CATEGORY;
   });
@@ -200,20 +201,19 @@ function App() {
   const headerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const updateMenuAnchor = useCallback(() => {
+  const updateHeaderMetrics = useCallback(() => {
     if (!headerRef.current) {
       return;
     }
     const rect = headerRef.current.getBoundingClientRect();
-    const gap = 16;
     setHeaderHeight(rect.height);
   }, []);
 
   useLayoutEffect(() => {
-    updateMenuAnchor();
-    window.addEventListener("resize", updateMenuAnchor);
-    return () => window.removeEventListener("resize", updateMenuAnchor);
-  }, [updateMenuAnchor]);
+    updateHeaderMetrics();
+    window.addEventListener("resize", updateHeaderMetrics);
+    return () => window.removeEventListener("resize", updateHeaderMetrics);
+  }, [updateHeaderMetrics]);
 
   useEffect(() => {
     const isNative = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
@@ -409,22 +409,12 @@ function App() {
       setIsMenuOpen(false);
     } else {
       setMenuView(view);
-      updateMenuAnchor();
+      updateHeaderMetrics();
       setIsMenuOpen(true);
     }
   }
 
-  useEffect(() => {
-    if (isMenuOpen && menuContentRef.current) {
-      menuContentRef.current.scrollTop = 0;
-    }
-  }, [isMenuOpen, menuView]);
-
-  useEffect(() => {
-    if (isMenuOpen && menuContentRef.current) {
-      menuContentRef.current.scrollTop = 0;
-    }
-  }, [isMenuOpen, menuView]);
+  // no-op: menu scroll reset removed after popover extraction
 
   // Reset state when mode changes (and store progress)
   useEffect(() => {
@@ -531,176 +521,34 @@ function App() {
   return (
     <div className="container" style={containerStyle}>
       {isMenuOpen && <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />}
-      <div
-        className={`menu-popover ${isMenuOpen ? 'open' : ''}`}
-      >
-        <div className="menu-card" ref={menuContentRef}>
-            <button
-              type="button"
-              className="menu-close"
-              aria-label="Menü schließen"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              ×
-            </button>
-            {menuView === "mode" && (
-              <>
-                <div className="welcome-header">
-                  <span className="logo badge-logo">
-                    <img src={headerBadge} alt="SBF Binnen Trainer" />
-                  </span>
-                  <h2>Willkommen an Bord!</h2>
-                  <p>Wähle deinen Modus oder setze dein Training fort.</p>
-                </div>
-                {sessionMode && (
-                  <div className="menu-resume">
-                    <div className="menu-resume-text">
-                      <span className="menu-resume-label">Aktueller Modus</span>
-                      <strong>
-                        {sessionMode === "practice"
-                          ? "Übungsmodus"
-                          : examModeMeta?.label || "Fragebogen"}
-                      </strong>
-                      {sessionMode === "practice" && totalQuestions > 0 && (
-                        <span>
-                          Fortschritt: {questionCounterDisplay} / {totalQuestions}
-                        </span>
-                      )}
-                      {sessionMode === "exam" && examModeMeta && selectedForm && (
-                        <span>
-                          Bogen {selectedForm} · {examModeMeta.questionCount} Fragen
-                        </span>
-                      )}
-                    </div>
-                    <div className="menu-resume-actions">
-                      <button className="primary-button" onClick={() => setIsMenuOpen(false)}>
-                        Weiter
-                      </button>
-                    </div>
-                  </div>
-                )}
-                <div className="welcome-actions">
-                  <button
-                    className="mode-card"
-                    onClick={() => {
-                      setSessionMode("practice");
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <span className="mode-icon">
-                      <img src={practiceModeIcon} alt="Übungsmodus" />
-                    </span>
-                    <h3>Übungsmodus</h3>
-                    <p>Alle Fragen oder gezielt falsch beantwortete wiederholen.</p>
-                  </button>
-                  <button
-                    className="mode-card"
-                    onClick={() => {
-                      setSessionMode("exam");
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <span className="mode-icon">
-                      <img src={examModeIcon} alt="Fragebogen" />
-                    </span>
-                    <h3>Fragebogen</h3>
-                    <p>Original Prüfungsbögen (Motor &amp; Segeln) simulieren.</p>
-                  </button>
-                  <button
-                    className="mode-card"
-                    onClick={() => setMenuView("stats")}
-                  >
-                    <span className="mode-icon">
-                      <img src={statsModeIcon} alt="Statistiken" />
-                    </span>
-                    <h3>Statistiken</h3>
-                    <p>Überblick über deine Ergebnisse in allen Fragebögen.</p>
-                  </button>
-                </div>
-                <div className="welcome-footer">
-                  <button
-                    className="link-button"
-                    onClick={() => {
-                      setIsAboutOpen(true);
-                      setMenuView("mode");
-                    }}
-                  >
-                    Über die App
-                  </button>
-                </div>
-              </>
-            )}
-            {menuView === "stats" && (
-              <div className="menu-stats-page">
-                <div className="menu-stats-header">
-                  <div>
-                    <span className="menu-resume-label">Statistiken</span>
-                    <h3>Deine Fragebogen-Ergebnisse</h3>
-                  </div>
-                </div>
-                {getExamModeKeys().map(modeKey => {
-                  const meta = getExamModeMeta(modeKey);
-                  const category = meta?.composite?.primaryCategory
-                    ?? meta?.formCategory
-                    ?? DEFAULT_CATEGORY;
-                  const forms = getExamFormNumbers(category);
-                  if (!forms.length) return null;
-                  return (
-                    <section className="menu-stats-section" key={`stats-${modeKey}`}>
-                      <header>
-                        <h4>{meta?.label ?? modeKey}</h4>
-                        {meta?.description && <p>{meta.description}</p>}
-                      </header>
-                      <ExamStatsPanel
-                        examMode={modeKey}
-                        stats={examStats}
-                        formOptions={forms}
-                        selectedForm={modeKey === examMode ? selectedForm : null}
-                      />
-                      <div className="menu-stats-section-actions">
-                        <button
-                          type="button"
-                          className="link-button"
-                          onClick={() => {
-                            setSessionMode("exam");
-                            setSelectedForm(String(forms[0]));
-                            setExamMode(modeKey);
-                            setMenuView("mode");
-                            setIsMenuOpen(false);
-                          }}
-                        >
-                          Diesen Modus starten
-                        </button>
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
-            )}
-        </div>
-      </div>
+      <MenuPopover
+        isOpen={isMenuOpen}
+        view={menuView}
+        onClose={() => setIsMenuOpen(false)}
+        onChangeView={setMenuView}
+        sessionMode={sessionMode}
+        totalQuestions={totalQuestions}
+        questionCounterDisplay={questionCounterDisplay}
+        examModeMeta={examModeMeta}
+        selectedForm={selectedForm}
+        examMode={examMode}
+        examStats={examStats}
+        examModeKeys={getExamModeKeys()}
+        onStartPractice={() => { setSessionMode('practice'); setIsMenuOpen(false); }}
+        onStartExam={() => { setSessionMode('exam'); setIsMenuOpen(false); }}
+        onOpenAbout={() => { setIsAboutOpen(true); setMenuView('mode'); }}
+        onStartSpecificMode={(modeKey, firstForm) => {
+          setSessionMode('exam');
+          setSelectedForm(firstForm);
+          setExamMode(modeKey);
+          setMenuView('mode');
+          setIsMenuOpen(false);
+        }}
+      />
       {isAboutOpen && (
         <AboutOverlay onClose={() => setIsAboutOpen(false)} />
       )}
-      <header className="header" ref={headerRef}>
-        <div className="header-inner">
-          <div className="brand">
-            <span className="logo">
-              <img src={headerBadge} alt="SBF Binnen Trainer" />
-            </span>
-            <h1>SBF Binnen Trainer</h1>
-          </div>
-          <button
-            className="menu-button"
-            type="button"
-            aria-label="Menü öffnen"
-            onClick={() => toggleMenu("mode")}
-          >
-            ☰
-          </button>
-        </div>
-        <p className="subtitle">Sportbootführerschein Binnen – Üben & Verstehen</p>
-      </header>
+      <HeaderBar ref={headerRef} onToggleMenu={() => toggleMenu("mode")} />
       <main className="page-body">
         {isExamSelectorVisible && (
           <ExamSelectorOverlay
@@ -775,20 +623,13 @@ function App() {
           </div>
         ) : (
           <div className="session-content">
-            <div className={progressSectionClass}>
-              <div className="progress-meta">
-                <span></span>
-                <span>
-                  Frage {questionCounterDisplay} / {totalQuestions}
-                </span>
-              </div>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
-                <div className="ship-marker" style={{ left: `${progressPercent}%` }}>
-                  <img src={progressBoat} alt="" aria-hidden="true" />
-                </div>
-              </div>
-            </div>
+            <ProgressStrip
+              className={progressSectionClass}
+              progressPercent={progressPercent}
+              questionCounterDisplay={questionCounterDisplay}
+              totalQuestions={totalQuestions}
+              progressBoat={progressBoat}
+            />
             <div className="question-section">
               <div className="card">
                 <Question
@@ -799,79 +640,25 @@ function App() {
                 />
               </div>
             </div>
-            <div className="session-controls">
-              <div className="controls">
-                {isExamSession ? (
-                  <>
-                    <span className="controls-hint">
-                      <img src={hintBadge} alt="" aria-hidden="true" />
-                    <span>
-                      {examModeMeta?.label ?? "Fragebogen"}
-                      {": "}
-                      {selectedForm || "–"}
-                      {examMode === "AMS" && ` + ${selectedSupplement || "–"}`}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    className="secondary-button swap-button"
-                    onClick={() => setIsExamSelectorOpen(true)}
-                    disabled={isExamSelectorVisible}
-                  >
-                    Fragebogen wechseln
-                  </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => setPracticeMode("all")}
-                      data-active={practiceMode === "all" ? "true" : undefined}
-                    >
-                      Alle Fragen
-                    </button>
-                    <button
-                      onClick={() => setPracticeMode("wrong")}
-                      data-active={practiceMode === "wrong" ? "true" : undefined}
-                    >
-                      Nur falsche (mind. 1x)
-                    </button>
-                    <button
-                      onClick={() => setPracticeMode("wrong-twice")}
-                      data-active={practiceMode === "wrong-twice" ? "true" : undefined}
-                    >
-                      Nur falsche (mind. 2x)
-                    </button>
-                  </>
-                )}
-                <button
-                  className="secondary-button reset-button"
-                  onClick={clearProgress}
-                  disabled={clampedIdx === 0 && !showResult}
-                >
-                  Fortschritt löschen
-                </button>
-                <button className="link-button" onClick={() => setIsAboutOpen(true)}>
-                  Über die App
-                </button>
-              </div>
-            </div>
+            <SessionControls
+              isExamSession={isExamSession}
+              examModeMeta={examModeMeta}
+              selectedForm={selectedForm}
+              selectedSupplement={selectedSupplement}
+              isExamSelectorVisible={isExamSelectorVisible}
+              onOpenExamSelector={() => setIsExamSelectorOpen(true)}
+              practiceMode={practiceMode}
+              onSetPracticeMode={setPracticeMode}
+              onClearProgress={clearProgress}
+              canClear={!(clampedIdx === 0 && !showResult)}
+              onOpenAbout={() => setIsAboutOpen(true)}
+              showResult={showResult}
+            />
           </div>
         )}
       </main>
       {showExitConfirm && (
-        <div className="confirm-overlay" role="dialog" aria-modal="true">
-          <div className="confirm-modal">
-            <p>Möchten Sie die Anwendung wirklich schließen?</p>
-            <div className="confirm-actions">
-              <button type="button" className="secondary-button" onClick={cancelExit}>
-                Nein
-              </button>
-              <button type="button" className="primary-button" onClick={confirmExit}>
-                Ja, beenden
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmExitDialog onConfirm={confirmExit} onCancel={cancelExit} />
       )}
     </div>
   );
@@ -879,137 +666,7 @@ function App() {
 
 export default App;
 
-function ExamSelectorOverlay({
-  examMode,
-  examModeKeys,
-  formOptions,
-  selectedForm,
-  examModeMeta,
-  onModeChange,
-  onFormChange,
-  onReset,
-  onClose,
-  canClose
-}) {
-  const modeLabel = examMode === "S"
-    ? "Segel-Fragebogen"
-    : examMode === "Supplement"
-      ? "Segel-Zusatzbogen"
-      : examMode === "AMS"
-        ? "Kombi-Fragebogen"
-        : "Motor-Fragebogen";
-  return (
-    <div className="exam-selector-overlay" role="dialog" aria-modal="true">
-      <div className="exam-selector-card">
-        <div className="exam-selector-header">
-          <h2>Fragebogen auswählen</h2>
-          {canClose && (
-            <button type="button" className="link-button" onClick={onClose}>
-              Schließen
-            </button>
-          )}
-        </div>
-        <div className="exam-selector-body">
-          <div className="toolbar-group">
-            <label>Version</label>
-            <select value={examMode} onChange={event => onModeChange(event.target.value)}>
-              {examModeKeys.map(modeKey => {
-                const meta = getExamModeMeta(modeKey);
-                return (
-                  <option key={modeKey} value={modeKey}>
-                    {meta?.label ?? modeKey}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-          {formOptions && formOptions.length > 0 ? (
-            <div className="toolbar-group">
-              <label>{modeLabel}</label>
-              <select value={selectedForm} onChange={event => onFormChange(event.target.value)}>
-                <option value="">Bitte wählen</option>
-                {formOptions.map(option => (
-                  <option key={String(option)} value={String(option)}>
-                    {String(option)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <p className="exam-selector-empty">Für diese Version sind keine Fragebögen hinterlegt.</p>
-          )}
-          {examModeMeta && (
-            <div className="exam-selector-meta">
-              <span>
-                {examModeMeta.questionCount} Fragen · {examModeMeta.timeMinutes} Min
-                {examModeMeta.maxWrong != null && ` · max. ${examModeMeta.maxWrong} Fehler`}
-              </span>
-              <div className="exam-selector-actions">
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={onReset}
-                  disabled={!selectedForm}
-                >
-                  Fortschritt zurücksetzen
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ExamStatsPanel({ examMode, stats, formOptions, selectedForm }) {
-  const keys = (formOptions || []).map(option => String(option));
-  if (!keys.length) return null;
-
-  const modeStats = (stats && stats[examMode]) || {};
-
-  return (
-    <div className="exam-stats">
-      {keys.map(key => {
-        const record = modeStats[key];
-        const bestPercentValue = record && typeof record.bestPercent === "number" && record.bestPercent >= 0
-          ? Math.round(Math.min(Math.max(record.bestPercent * 100, 0), 100))
-          : null;
-        const lastPercentValue = record && record.lastTotal
-          ? Math.round(Math.min(Math.max((record.lastCorrect / record.lastTotal) * 100, 0), 100))
-          : null;
-        const barWidth = bestPercentValue != null ? Math.min(Math.max(bestPercentValue, 4), 100) : 0;
-        const isSelected = String(selectedForm || "") === key;
-
-        return (
-          <div className={`exam-stat-card${isSelected ? " selected" : ""}`} key={`${examMode}-${key}`}>
-            <div className="exam-stat-header">
-              <span>{formatFormLabel(examMode, key)}</span>
-              <span>{bestPercentValue != null ? `${bestPercentValue}%` : "–"}</span>
-            </div>
-            <div className="exam-stat-progress">
-              <span style={{ width: `${barWidth}%` }} />
-            </div>
-            <div className="exam-stat-meta">
-              {record ? (
-                <>
-                  <span>Beste Runde: {record.bestCorrect}/{record.bestTotal}</span>
-                  <span>
-                    Letzte Runde: {record.lastCorrect}/{record.lastTotal}
-                    {lastPercentValue != null ? ` (${lastPercentValue}%)` : ""}
-                  </span>
-                  <span>Versuche: {record.attempts}</span>
-                </>
-              ) : (
-                <span>Noch keine Versuche</span>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+// ExamSelectorOverlay and ExamStatsPanel are imported from components
 
 function formatFormLabel(mode, key) {
   const numericPart = key.replace(/[^0-9]/g, "");

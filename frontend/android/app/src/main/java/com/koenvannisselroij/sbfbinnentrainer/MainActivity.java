@@ -1,4 +1,4 @@
-package com.example.sbfbinnen;
+package com.koenvannisselroij.sbfbinnentrainer;
 
 import com.getcapacitor.BridgeActivity;
 
