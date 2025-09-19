@@ -66,7 +66,9 @@ body::before {
   display: flex;
   justify-content: flex-end;
   align-items: stretch;
-  transition: opacity 160ms ease, transform 160ms ease;
+  transform-origin: top right;
+  transform: scale(0.8);
+  transition: opacity 300ms ease, transform 300ms ease;
 }
 
 .menu-popover.open {
@@ -701,42 +703,6 @@ body::before {
   justify-content: flex-end;
 }
 
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(6, 34, 53, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 16px;
-}
-
-.confirm-modal {
-  background: var(--surface);
-  border-radius: 24px;
-  padding: 28px 24px;
-  width: min(90vw, 360px);
-  box-shadow: 0 24px 48px rgba(6, 66, 109, 0.3);
-  border: 1px solid var(--border-soft);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  text-align: center;
-}
-
-.confirm-modal p {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--text-strong);
-}
-
-.confirm-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-
 .header {
   position: sticky;
   top: calc(env(safe-area-inset-top, 0px) + 16px);
@@ -1074,16 +1040,6 @@ ul {
   flex-direction: column;
   gap: 14px;
   padding: 0;
-}
-
-.question-tools {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
-.question-tools .tip-link {
-  font-size: 0.9rem;
 }
 
 .option-button {
