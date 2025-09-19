@@ -94,13 +94,13 @@ function Question({ data, onAnswer, qNum, total }) {
       )}
       {showCorrect && (
         <div className="question-actions">
-          {selected !== newCorrectIdx && hasSupplemental && (
+          {selected !== newCorrectIdx && hasExplanation && (
             <button
               type="button"
               className="secondary-button"
               onClick={() => openTipOverlay('full')}
             >
-              Tipps & Hintergrund
+              Hintergrund anzeigen
             </button>
           )}
           <button className="primary-button" onClick={handleContinue}>Weiter</button>
@@ -110,7 +110,7 @@ function Question({ data, onAnswer, qNum, total }) {
         <div className="tip-overlay" role="dialog" aria-modal="true">
           <div className="tip-modal">
             <div className="tip-modal-content">
-              {hasTip && (
+              {tipOverlayMode === 'tip' && hasTip && (
                 <div className="tip-card" style={{ marginBottom: 12 }}>
                   <strong>Skipper‑Tipp:</strong>
                   <div style={{ marginTop: 6 }}>{data.tip}</div>
