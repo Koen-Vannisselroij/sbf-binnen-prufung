@@ -51,6 +51,7 @@ body::before {
   background: rgba(6, 34, 53, 0.4);
   backdrop-filter: blur(8px);
   z-index: 11;
+  transition: opacity 800ms ease;
 }
 
 .menu-popover {
@@ -66,7 +67,7 @@ body::before {
   justify-content: flex-end;
   align-items: stretch;
   transform: translateY(12px);
-  transition: opacity 240ms ease;
+  transition: opacity 800ms ease;
 }
 
 .menu-popover.open {

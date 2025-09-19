@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.example.sbfbinnen"
+    namespace "com.koenvannisselroij.sbfbinnentrainer"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.example.sbfbinnen"
+        applicationId "com.koenvannisselroij.sbfbinnentrainer"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -4,9 +4,9 @@ export default function ProgressStrip({ progressPercent, questionCounterDisplay,
   return (
     <div className={className}>
       <div className="progress-meta">
-        <span>Fortschritt</span>
+        <span></span>
         <span>
-          {progressPercent}% · Frage {questionCounterDisplay} / {totalQuestions}
+          Frage {questionCounterDisplay} / {totalQuestions}
         </span>
       </div>
       <div className="progress">
