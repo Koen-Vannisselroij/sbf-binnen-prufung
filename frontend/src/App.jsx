@@ -201,7 +201,6 @@ function App() {
 
   const questionIndex = createQuestionIndex(questions);
   const headerRef = useRef(null);
-  const [menuAnchorTop, setMenuAnchorTop] = useState(null);
   const [headerHeight, setHeaderHeight] = useState(0);
 
   const updateMenuAnchor = useCallback(() => {
@@ -210,8 +209,6 @@ function App() {
     }
     const rect = headerRef.current.getBoundingClientRect();
     const gap = 16;
-    const nextTop = Math.max(rect.bottom + gap, gap);
-    setMenuAnchorTop(nextTop);
     setHeaderHeight(rect.height);
   }, []);
 
@@ -539,12 +536,6 @@ function App() {
       {isMenuOpen && <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />}
       <div
         className={`menu-popover ${isMenuOpen ? 'open' : ''}`}
-        style={isMenuOpen ? {
-          top: menuAnchorTop != null
-            ? `${menuAnchorTop}px`
-            : 'calc(env(safe-area-inset-top, 0px) + 120px)',
-          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
-        } : undefined}
       >
         <div className="menu-card" ref={menuContentRef}>
             <button
