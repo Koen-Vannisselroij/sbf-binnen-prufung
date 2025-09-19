@@ -11,7 +11,7 @@ An open‑source learning app for the Sportbootführerschein Binnen (SBF Binnen)
 - Full offline support: all progress stays on the device (localStorage)
 - Mobile‑first layout with large tap targets and a quick “hamburger” menu
 
-I was mainly annoyed by the fact that there is an app available which costs 30 euro's where the only usable feature is that it gives tips to the end user if a question is wrong. I generated tips using LLM's and created my own version. It does not have images yet.
+I was mainly annoyed by the fact that there is an app available which costs 30 euro's where the only usable feature is that it gives tips to the end user if a question is wrong and allows the user to repeat wrong questions. I generated tips using LLM's and created my own version. It does not have images yet.
 I used a non-polished version of this to pass the exam myself.
 
 What’s inside
