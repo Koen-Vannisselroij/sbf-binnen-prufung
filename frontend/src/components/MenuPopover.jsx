@@ -1,10 +1,9 @@
 import React from 'react';
 import headerBadge from '../assets/icons/header_badge_sailboat.svg';
-import practiceModeIcon from '../assets/icons/practice_mode_logbook.svg';
-import examModeIcon from '../assets/icons/fragebogen_scroll_check.svg';
-import statsModeIcon from '../assets/icons/stats_gauge_waves.svg';
 import { DEFAULT_CATEGORY, getExamModeMeta, getExamFormNumbers } from '../utils/examForms.js';
 import ExamStatsPanel from './ExamStatsPanel.jsx';
+import MenuResume from './MenuResume.jsx';
+import MenuModeCards from './MenuModeCards.jsx';
 
 export default function MenuPopover({
   isOpen,
@@ -45,54 +44,19 @@ export default function MenuPopover({
               <h2>Willkommen an Bord!</h2>
               <p>Wähle deinen Modus oder setze dein Training fort.</p>
             </div>
-            {sessionMode && (
-              <div className="menu-resume">
-                <div className="menu-resume-text">
-                  <span className="menu-resume-label">Aktueller Modus</span>
-                  <strong>
-                    {sessionMode === 'practice' ? 'Übungsmodus' : examModeMeta?.label || 'Fragebogen'}
-                  </strong>
-                  {sessionMode === 'practice' && totalQuestions > 0 && (
-                    <span>
-                      Fortschritt: {questionCounterDisplay} / {totalQuestions}
-                    </span>
-                  )}
-                  {sessionMode === 'exam' && examModeMeta && selectedForm && (
-                    <span>
-                      Bogen {selectedForm} · {examModeMeta.questionCount} Fragen
-                    </span>
-                  )}
-                </div>
-                <div className="menu-resume-actions">
-                  <button className="primary-button" onClick={onClose}>
-                    Weiter
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="welcome-actions">
-              <button className="mode-card" onClick={onStartPractice}>
-                <span className="mode-icon">
-                  <img src={practiceModeIcon} alt="Übungsmodus" />
-                </span>
-                <h3>Übungsmodus</h3>
-                <p>Alle Fragen oder gezielt falsch beantwortete wiederholen.</p>
-              </button>
-              <button className="mode-card" onClick={onStartExam}>
-                <span className="mode-icon">
-                  <img src={examModeIcon} alt="Fragebogen" />
-                </span>
-                <h3>Fragebogen</h3>
-                <p>Original Prüfungsbögen (Motor & Segeln) simulieren.</p>
-              </button>
-              <button className="mode-card" onClick={() => onChangeView('stats')}>
-                <span className="mode-icon">
-                  <img src={statsModeIcon} alt="Statistiken" />
-                </span>
-                <h3>Statistiken</h3>
-                <p>Überblick über deine Ergebnisse in allen Fragebögen.</p>
-              </button>
-            </div>
+            <MenuResume
+              sessionMode={sessionMode}
+              totalQuestions={totalQuestions}
+              questionCounterDisplay={questionCounterDisplay}
+              examModeMeta={examModeMeta}
+              selectedForm={selectedForm}
+              onContinue={onClose}
+            />
+            <MenuModeCards
+              onPractice={onStartPractice}
+              onExam={onStartExam}
+              onStats={() => onChangeView('stats')}
+            />
             <div className="welcome-footer">
               <button className="link-button" onClick={onOpenAbout}>
                 Über die App
@@ -144,4 +108,3 @@ export default function MenuPopover({
     </div>
   );
 }
-
