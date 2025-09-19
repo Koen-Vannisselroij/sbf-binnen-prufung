@@ -61,10 +61,7 @@ function App() {
   const [sessionMode, setSessionMode] = useState(() => {
     return localStorage.getItem(MODE_KEY) || null;
   });
-  const [isMenuOpen, setIsMenuOpen] = useState(() => {
-    const stored = localStorage.getItem(MODE_KEY);
-    return !stored;
-  });
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [menuView, setMenuView] = useState("mode");
   const menuContentRef = useRef(null);
   const [examCategory, setExamCategory] = useState(() => {
