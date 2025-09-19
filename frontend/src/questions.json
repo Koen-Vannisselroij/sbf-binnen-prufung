@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "question": "August 2023\nIn diesem Katalog ist immer Antwort a die richtige.\nBasisfragen (Interner Link) (Frage 1 bis Frage 72)\nSpezifische Fragen Binnen (Interner Link) (Frage 73 bis Frage 253)\nSpezifische Fragen Segeln (Interner Link) (Frage 254 bis Frage 300)\nStand: 01. August 2023\nSie sind hier: ELWIS Sportschifffahrt Sportbootführerscheine Fragenkatalog Binnen\n© Wasserstraßen- und Schifffahrtsverwaltung des Bundes \n\n\n\n\n\n\n\n\n\n\nSie sind hier:\nELWIS Sportschifffahrt Sportbootführerscheine Fragenkatalog Binnen Basisfragen\nBasisfragen\nAnmerkung:\nAntwort a ist immer die richtige.\n1. Was ist zu tun, wenn vor Antritt der Fahrt nicht feststeht, wer Schiffsführer ist?",
+    "question": "Was ist zu tun, wenn vor Antritt der Fahrt nicht feststeht, wer Schiffsführer ist?",
     "options": [
       "Der verantwortliche Schiffsführer muss bestimmt werden.",
       "Der verantwortliche Schiffsführer muss gewählt werden.",
@@ -792,8 +792,8 @@
     "answer": 0
   },
   {
-    "id": 1,
-    "question": "August 2023\n© Wasserstraßen- und Schifffahrtsverwaltung des Bundes \n\n\n\n\n\n\n\n\nSie sind hier:\nELWIS Sportschifffahrt Sportbootführerscheine Fragenkatalog Binnen\nSpezifische Fragen Binnen\nSpezifische Fragen Binnen\nAnmerkung:\nAntwort a ist immer die richtige.\n73. Für welche Sportboote ist der Sportbootführerschein mit dem Geltungsbereich Binnenschifffahrtsstraßen vorgeschrieben?",
+    "id": 73,
+    "question": "Für welche Sportboote ist der Sportbootführerschein mit dem Geltungsbereich Binnenschifffahrtsstraßen vorgeschrieben?",
     "options": [
       "Für Sportboote von mehr als 11,03 kW (15 PS) Nutzleistung bei Verwendung eines Verbrennungsmotors bzw. 7,5 kW bei",
       "Für Sportboote von weniger als 11,03 kW (15 PS) Nutzleistung bei Verwendung eines Verbrennungsmotors bzw. 7,5 kW bei",
@@ -2783,8 +2783,8 @@
     "answer": 0
   },
   {
-    "id": 1,
-    "question": "August 2023\n© Wasserstraßen- und Schifffahrtsverwaltung des Bundes \n\n\n\n\n\nSie sind hier:\nELWIS Sportschifffahrt Sportbootführerscheine Fragenkatalog Binnen\nSpezifische Fragen Segeln\nSpezifische Fragen Segeln\nAnmerkung:\nAntwort a ist immer die richtige.\n254. Was wird unter einem \"Kimmkieler\" verstanden?",
+    "id": 254,
+    "question": "Was wird unter einem \"Kimmkieler\" verstanden?",
     "options": [
       "Eine Yacht mit zwei Seitenkielen.",
       "Eine Yacht mit zwei Seitenschwertern.",
