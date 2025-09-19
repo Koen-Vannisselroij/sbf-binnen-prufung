@@ -65,14 +65,13 @@ body::before {
   display: flex;
   justify-content: flex-end;
   align-items: stretch;
-  transform-origin: top right;
-  transform: translateY(-6px) scale(0.96);
-  transition: opacity 320ms ease, transform 320ms ease;
+  transform: translateY(12px);
+  transition: opacity 240ms ease;
 }
 
 .menu-popover.open {
   opacity: 1;
-  transform: translateY(12px) scale(1);
+  transform: translateY(12px);
   pointer-events: auto;
 }
 
