@@ -409,7 +409,7 @@ function App() {
       setIsMenuOpen(false);
     } else {
       setMenuView(view);
-      updateMenuAnchor();
+      updateHeaderMetrics();
       setIsMenuOpen(true);
     }
   }
