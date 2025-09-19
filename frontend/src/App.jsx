@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import questions from "./questions_with_tips_and_explanations.json";
 import Question from "./Question.jsx";
 import {
@@ -12,6 +12,12 @@ import {
   getExamModeFormCategories
 } from "./utils/examForms.js";
 import "./App.css";
+import headerBadge from "./assets/icons/header_badge_sailboat.svg";
+import practiceModeIcon from "./assets/icons/practice_mode_logbook.svg";
+import examModeIcon from "./assets/icons/fragebogen_scroll_check.svg";
+import statsModeIcon from "./assets/icons/stats_gauge_waves.svg";
+import hintBadge from "./assets/icons/hint_badge_lighthouse.svg";
+import progressBoat from "./assets/animations/boat_only_loading_0d9ad9.svg";
 
 const MISTAKES_KEY = "sbf-mistakes";
 const PRACTICE_MODE_KEY = "sbf-mode";
@@ -90,6 +96,7 @@ function App() {
       return {};
     }
   });
+  const [isExamSelectorOpen, setIsExamSelectorOpen] = useState(false);
 
   // Save to localStorage whenever these states change
   useEffect(() => {
@@ -171,6 +178,14 @@ function App() {
   }, [examMode, selectedForm, selectedSupplement]);
 
   useEffect(() => {
+    if (sessionMode === "exam") {
+      setIsExamSelectorOpen(!selectedForm);
+    } else {
+      setIsExamSelectorOpen(false);
+    }
+  }, [sessionMode, selectedForm]);
+
+  useEffect(() => {
     if (import.meta.env?.DEV) {
       const validation = validateExamForms(questions);
       if (!validation.ok) {
@@ -181,6 +196,26 @@ function App() {
   }, []);
 
   const questionIndex = createQuestionIndex(questions);
+  const headerRef = useRef(null);
+  const [menuAnchorTop, setMenuAnchorTop] = useState(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const updateMenuAnchor = useCallback(() => {
+    if (!headerRef.current) {
+      return;
+    }
+    const rect = headerRef.current.getBoundingClientRect();
+    const gap = 16;
+    const nextTop = Math.max(rect.bottom + gap, gap);
+    setMenuAnchorTop(nextTop);
+    setHeaderHeight(rect.height);
+  }, []);
+
+  useLayoutEffect(() => {
+    updateMenuAnchor();
+    window.addEventListener("resize", updateMenuAnchor);
+    return () => window.removeEventListener("resize", updateMenuAnchor);
+  }, [updateMenuAnchor]);
 
   function recordExamResult(modeKey, formKey, correct, total) {
     if (!modeKey || !formKey || !Number.isFinite(total) || total <= 0) {
@@ -318,12 +353,18 @@ function App() {
     : 0;
   const questionCounterDisplay = totalQuestions > 0 ? clampedIdx + 1 : 0;
   const examNeedsSelection = isExamSession && !selectedForm;
+  const isExamSelectorVisible = isExamSession && isExamSelectorOpen && !isMenuOpen;
+  const progressSectionClass = isExamSelectorVisible ? "progress-section overlay-open" : "progress-section";
+  const containerStyle = headerHeight
+    ? { '--header-height': `${headerHeight}px` }
+    : undefined;
 
   function toggleMenu(view = "mode") {
     if (isMenuOpen) {
       setIsMenuOpen(false);
     } else {
       setMenuView(view);
+      updateMenuAnchor();
       setIsMenuOpen(true);
     }
   }
@@ -443,12 +484,18 @@ function App() {
   }
 
   return (
-    <div className="container">
-      {isMenuOpen && (
-        <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />
-      )}
-      <div className={`menu-popover ${isMenuOpen ? 'open' : ''}`} ref={menuContentRef}>
-        <div className="menu-card">
+    <div className="container" style={containerStyle}>
+      {isMenuOpen && <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />}
+      <div
+        className={`menu-popover ${isMenuOpen ? 'open' : ''}`}
+        style={isMenuOpen ? {
+          top: menuAnchorTop != null
+            ? `${menuAnchorTop}px`
+            : 'calc(env(safe-area-inset-top, 0px) + 120px)',
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
+        } : undefined}
+      >
+        <div className="menu-card" ref={menuContentRef}>
             <button
               type="button"
               className="menu-close"
@@ -460,7 +507,9 @@ function App() {
             {menuView === "mode" && (
               <>
                 <div className="welcome-header">
-                  <span className="logo badge-logo">⚓️</span>
+                  <span className="logo badge-logo">
+                    <img src={headerBadge} alt="SBF Binnen Trainer" />
+                  </span>
                   <h2>Willkommen an Bord!</h2>
                   <p>Wähle deinen Modus oder setze dein Training fort.</p>
                 </div>
@@ -499,7 +548,9 @@ function App() {
                       setIsMenuOpen(false);
                     }}
                   >
-                    <span className="mode-icon">📘</span>
+                    <span className="mode-icon">
+                      <img src={practiceModeIcon} alt="Übungsmodus" />
+                    </span>
                     <h3>Übungsmodus</h3>
                     <p>Alle Fragen oder gezielt falsch beantwortete wiederholen.</p>
                   </button>
@@ -510,7 +561,9 @@ function App() {
                       setIsMenuOpen(false);
                     }}
                   >
-                    <span className="mode-icon">🧭</span>
+                    <span className="mode-icon">
+                      <img src={examModeIcon} alt="Fragebogen" />
+                    </span>
                     <h3>Fragebogen</h3>
                     <p>Original Prüfungsbögen (Motor &amp; Segeln) simulieren.</p>
                   </button>
@@ -518,7 +571,9 @@ function App() {
                     className="mode-card"
                     onClick={() => setMenuView("stats")}
                   >
-                    <span className="mode-icon">📊</span>
+                    <span className="mode-icon">
+                      <img src={statsModeIcon} alt="Statistiken" />
+                    </span>
                     <h3>Statistiken</h3>
                     <p>Überblick über deine Ergebnisse in allen Fragebögen.</p>
                   </button>
@@ -588,89 +643,12 @@ function App() {
       {isAboutOpen && (
         <AboutOverlay onClose={() => setIsAboutOpen(false)} />
       )}
-      {isExamSession && !isMenuOpen && (
-        <div className="exam-toolbar">
-          <div className="toolbar-group">
-            <label>Version</label>
-            <select
-              value={examMode}
-              onChange={event => {
-                const value = event.target.value;
-                setExamMode(value);
-              }}
-            >
-              {examModeKeys.map(modeKey => {
-                const meta = getExamModeMeta(modeKey);
-                return (
-                  <option key={modeKey} value={modeKey}>
-                    {meta?.label ?? modeKey}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-          {isExamSession && formOptions.length > 0 && (
-            <div className="toolbar-group">
-              <label>
-                {examMode === "S"
-                  ? "Segel-Fragebogen"
-                  : examMode === "Supplement"
-                    ? "Segel-Zusatzbogen"
-                    : "Motor-Fragebogen"}
-              </label>
-              <select
-                value={selectedForm}
-                onChange={event => {
-                  const value = event.target.value;
-                  setSelectedForm(value);
-                  setShowResult(false);
-                  setScore(0);
-                  setUserAnswers([]);
-                  if (examMode === "AMS") {
-                    setSelectedSupplement(value ? `E${value}` : "");
-                  }
-                }}
-              >
-                <option value="">Bitte wählen</option>
-                {formOptions.map(option => (
-                  <option key={String(option)} value={String(option)}>
-                    {String(option)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          {examModeMeta && (
-            <div className="exam-meta">
-              <span>
-                {examModeMeta.questionCount} Fragen · {examModeMeta.timeMinutes} Min
-                {examModeMeta.maxWrong != null && ` · max. ${examModeMeta.maxWrong} Fehler`}
-              </span>
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => {
-                  if (!selectedForm) return;
-                  const label = formatFormLabel(examMode, selectedForm);
-                  if (window.confirm(`${label}: Fortschritt wirklich zurücksetzen?`)) {
-                    updateExamProgress(examMode, selectedForm, 0);
-                    setScore(0);
-                    setShowResult(false);
-                    setUserAnswers([]);
-                  }
-                }}
-                disabled={!selectedForm}
-              >
-                Fortschritt zurücksetzen
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-      <header className="header">
+      <header className="header" ref={headerRef}>
         <div className="header-inner">
           <div className="brand">
-            <span className="logo">⚓️</span>
+            <span className="logo">
+              <img src={headerBadge} alt="SBF Binnen Trainer" />
+            </span>
             <h1>SBF Binnen Trainer</h1>
           </div>
           <button
@@ -684,107 +662,251 @@ function App() {
         </div>
         <p className="subtitle">Sportbootführerschein Binnen – Üben & Verstehen</p>
       </header>
-      {totalQuestions === 0 ? (
-        <div className="card empty-card">
-          <h2 className="empty-title">
-            {examNeedsSelection ? "Wähle einen Fragebogen" : "Noch keine Fragen hier"}
-          </h2>
-          <p className="empty-text">
-            {examNeedsSelection
-              ? "Bitte wähle die passende Prüfungsvariante und den Fragebogen, um zu starten."
-              : "In diesem Modus gibt es aktuell keine Fragen. Wechsle zurück zu allen Fragen oder beantworte erst Fragen, damit sie hier erscheinen."}
-          </p>
-          {!examNeedsSelection && (
-            <div className="empty-actions">
-              <button className="primary-button" onClick={() => setPracticeMode("all")}>
-                Zurück zu allen Fragen
-              </button>
-            </div>
-          )}
-        </div>
-      ) : showResult ? (
-        <div className="card result-card">
-          <h2 className="result-title">Fertig!</h2>
-          <p className="result-score">
-            Richtige Antworten: <strong>{score}</strong> / {totalQuestions}
-          </p>
-          <div className="result-actions">
-            <button className="primary-button" onClick={restart}>Neu starten</button>
-            <button className="secondary-button" onClick={clearProgress}>Fortschritt löschen</button>
+      <main className="page-body">
+        {isExamSelectorVisible && (
+          <ExamSelectorOverlay
+            examMode={examMode}
+            examModeKeys={examModeKeys}
+            formOptions={formOptions}
+            selectedForm={selectedForm}
+            examModeMeta={examModeMeta}
+            onModeChange={value => {
+              setExamMode(value);
+              setSelectedForm("");
+              setSelectedSupplement("");
+            }}
+            onFormChange={value => {
+              setSelectedForm(value);
+              setShowResult(false);
+              setScore(0);
+              setUserAnswers([]);
+              if (examMode === "AMS") {
+                setSelectedSupplement(value ? `E${value}` : "");
+              }
+              if (value) {
+                setIsExamSelectorOpen(false);
+              }
+            }}
+            onReset={() => {
+              if (!selectedForm) return;
+              const label = formatFormLabel(examMode, selectedForm);
+              if (window.confirm(`${label}: Fortschritt wirklich zurücksetzen?`)) {
+                updateExamProgress(examMode, selectedForm, 0);
+                setScore(0);
+                setShowResult(false);
+                setUserAnswers([]);
+              }
+            }}
+            canClose={Boolean(selectedForm)}
+            onClose={() => {
+              if (selectedForm) {
+                setIsExamSelectorOpen(false);
+              }
+            }}
+          />
+        )}
+        {totalQuestions === 0 ? (
+          <div className="card empty-card">
+            <h2 className="empty-title">
+              {examNeedsSelection ? "Wähle einen Fragebogen" : "Noch keine Fragen hier"}
+            </h2>
+            <p className="empty-text">
+              {examNeedsSelection
+                ? "Bitte wähle die passende Prüfungsvariante und den Fragebogen, um zu starten."
+                : "In diesem Modus gibt es aktuell keine Fragen. Wechsle zurück zu allen Fragen oder beantworte erst Fragen, damit sie hier erscheinen."}
+            </p>
+            {!examNeedsSelection && (
+              <div className="empty-actions">
+                <button className="primary-button" onClick={() => setPracticeMode("all")}>
+                  Zurück zu allen Fragen
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      ) : (
-        <div className="session-content">
-          <div className="question-section">
-            <div className="progress-meta">
-              <span>Fortschritt</span>
-              <span>
-                {progressPercent}% · Frage {questionCounterDisplay} / {totalQuestions}
-              </span>
-            </div>
-            <div className="progress">
-              <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
-              <div className="ship-marker" style={{ left: `calc(${progressPercent}% - 12px)` }}>⛵</div>
-            </div>
-            <div className="card">
-              <Question
-                data={filteredQuestions[clampedIdx]}
-                onAnswer={handleAnswer}
-                qNum={clampedIdx + 1}
-                total={filteredQuestions.length}
-              />
+        ) : showResult ? (
+          <div className="card result-card">
+            <h2 className="result-title">Fertig!</h2>
+            <p className="result-score">
+              Richtige Antworten: <strong>{score}</strong> / {totalQuestions}
+            </p>
+            <div className="result-actions">
+              <button className="primary-button" onClick={restart}>Neu starten</button>
+              <button className="secondary-button" onClick={clearProgress}>Fortschritt löschen</button>
             </div>
           </div>
-          <div className="session-controls">
-            <div className="controls">
-              {isExamSession ? (
-                <span className="controls-hint">
-                  {examModeMeta?.label ?? "Fragebogen"}
-                  {": "}
-                  {selectedForm || "–"}
-                  {examMode === "AMS" && ` + ${selectedSupplement || "–"}`}
+        ) : (
+          <div className="session-content">
+            <div className={progressSectionClass}>
+              <div className="progress-meta">
+                <span>Fortschritt</span>
+                <span>
+                  {progressPercent}% · Frage {questionCounterDisplay} / {totalQuestions}
                 </span>
-              ) : (
-                <>
+              </div>
+              <div className="progress">
+                <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
+                <div className="ship-marker" style={{ left: `${progressPercent}%` }}>
+                  <img src={progressBoat} alt="" aria-hidden="true" />
+                </div>
+              </div>
+            </div>
+            <div className="question-section">
+              <div className="card">
+                <Question
+                  data={filteredQuestions[clampedIdx]}
+                  onAnswer={handleAnswer}
+                  qNum={clampedIdx + 1}
+                  total={filteredQuestions.length}
+                />
+              </div>
+            </div>
+            <div className="session-controls">
+              <div className="controls">
+                {isExamSession ? (
+                  <>
+                    <span className="controls-hint">
+                      <img src={hintBadge} alt="" aria-hidden="true" />
+                    <span>
+                      {examModeMeta?.label ?? "Fragebogen"}
+                      {": "}
+                      {selectedForm || "–"}
+                      {examMode === "AMS" && ` + ${selectedSupplement || "–"}`}
+                    </span>
+                  </span>
                   <button
-                    onClick={() => setPracticeMode("all")}
-                    data-active={practiceMode === "all" ? "true" : undefined}
+                    type="button"
+                    className="secondary-button swap-button"
+                    onClick={() => setIsExamSelectorOpen(true)}
+                    disabled={isExamSelectorVisible}
                   >
-                    Alle Fragen
+                    Fragebogen wechseln
                   </button>
-                  <button
-                    onClick={() => setPracticeMode("wrong")}
-                    data-active={practiceMode === "wrong" ? "true" : undefined}
-                  >
-                    Nur falsche (mind. 1x)
-                  </button>
-                  <button
-                    onClick={() => setPracticeMode("wrong-twice")}
-                    data-active={practiceMode === "wrong-twice" ? "true" : undefined}
-                  >
-                    Nur falsche (mind. 2x)
-                  </button>
-                </>
-              )}
-              <button
-                className="secondary-button"
-                onClick={clearProgress}
-                disabled={clampedIdx === 0 && !showResult}
-              >
-                Fortschritt löschen
-              </button>
-              <button className="link-button" onClick={() => setIsAboutOpen(true)}>
-                Über die App
-              </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setPracticeMode("all")}
+                      data-active={practiceMode === "all" ? "true" : undefined}
+                    >
+                      Alle Fragen
+                    </button>
+                    <button
+                      onClick={() => setPracticeMode("wrong")}
+                      data-active={practiceMode === "wrong" ? "true" : undefined}
+                    >
+                      Nur falsche (mind. 1x)
+                    </button>
+                    <button
+                      onClick={() => setPracticeMode("wrong-twice")}
+                      data-active={practiceMode === "wrong-twice" ? "true" : undefined}
+                    >
+                      Nur falsche (mind. 2x)
+                    </button>
+                  </>
+                )}
+                <button
+                  className="secondary-button reset-button"
+                  onClick={clearProgress}
+                  disabled={clampedIdx === 0 && !showResult}
+                >
+                  Fortschritt löschen
+                </button>
+                <button className="link-button" onClick={() => setIsAboutOpen(true)}>
+                  Über die App
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }
 
 export default App;
+
+function ExamSelectorOverlay({
+  examMode,
+  examModeKeys,
+  formOptions,
+  selectedForm,
+  examModeMeta,
+  onModeChange,
+  onFormChange,
+  onReset,
+  onClose,
+  canClose
+}) {
+  const modeLabel = examMode === "S"
+    ? "Segel-Fragebogen"
+    : examMode === "Supplement"
+      ? "Segel-Zusatzbogen"
+      : examMode === "AMS"
+        ? "Kombi-Fragebogen"
+        : "Motor-Fragebogen";
+  return (
+    <div className="exam-selector-overlay" role="dialog" aria-modal="true">
+      <div className="exam-selector-card">
+        <div className="exam-selector-header">
+          <h2>Fragebogen auswählen</h2>
+          {canClose && (
+            <button type="button" className="link-button" onClick={onClose}>
+              Schließen
+            </button>
+          )}
+        </div>
+        <div className="exam-selector-body">
+          <div className="toolbar-group">
+            <label>Version</label>
+            <select value={examMode} onChange={event => onModeChange(event.target.value)}>
+              {examModeKeys.map(modeKey => {
+                const meta = getExamModeMeta(modeKey);
+                return (
+                  <option key={modeKey} value={modeKey}>
+                    {meta?.label ?? modeKey}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          {formOptions && formOptions.length > 0 ? (
+            <div className="toolbar-group">
+              <label>{modeLabel}</label>
+              <select value={selectedForm} onChange={event => onFormChange(event.target.value)}>
+                <option value="">Bitte wählen</option>
+                {formOptions.map(option => (
+                  <option key={String(option)} value={String(option)}>
+                    {String(option)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <p className="exam-selector-empty">Für diese Version sind keine Fragebögen hinterlegt.</p>
+          )}
+          {examModeMeta && (
+            <div className="exam-selector-meta">
+              <span>
+                {examModeMeta.questionCount} Fragen · {examModeMeta.timeMinutes} Min
+                {examModeMeta.maxWrong != null && ` · max. ${examModeMeta.maxWrong} Fehler`}
+              </span>
+              <div className="exam-selector-actions">
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={onReset}
+                  disabled={!selectedForm}
+                >
+                  Fortschritt zurücksetzen
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ExamStatsPanel({ examMode, stats, formOptions, selectedForm }) {
   const keys = (formOptions || []).map(option => String(option));
