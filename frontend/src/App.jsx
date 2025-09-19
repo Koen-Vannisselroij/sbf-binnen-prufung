@@ -738,7 +738,7 @@ function App() {
           <div className="session-content">
             <div className={progressSectionClass}>
               <div className="progress-meta">
-                <span>Fortschritt</span>
+                <span>  Fortschritt</span>
                 <span>
                   {progressPercent}% · Frage {questionCounterDisplay} / {totalQuestions}
                 </span>
