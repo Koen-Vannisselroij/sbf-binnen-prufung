@@ -17,8 +17,8 @@ import progressBoat from "./assets/animations/boat_only_loading_0d9ad9.svg";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import ProgressStrip from "./components/ProgressStrip.jsx";
+import SessionControls from "./components/SessionControls.jsx";
 import ExamSelectorOverlay from "./components/ExamSelectorOverlay.jsx";
-import ExamStatsPanel from "./components/ExamStatsPanel.jsx";
 import HeaderBar from "./components/HeaderBar.jsx";
 import ConfirmExitDialog from "./components/ConfirmExitDialog.jsx";
 import MenuPopover from "./components/MenuPopover.jsx";
@@ -640,62 +640,20 @@ function App() {
                 />
               </div>
             </div>
-            <div className="session-controls">
-              <div className="controls">
-                {isExamSession ? (
-                  <>
-                    <span className="controls-hint">
-                      <img src={hintBadge} alt="" aria-hidden="true" />
-                    <span>
-                      {examModeMeta?.label ?? "Fragebogen"}
-                      {": "}
-                      {selectedForm || "–"}
-                      {examMode === "AMS" && ` + ${selectedSupplement || "–"}`}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    className="secondary-button swap-button"
-                    onClick={() => setIsExamSelectorOpen(true)}
-                    disabled={isExamSelectorVisible}
-                  >
-                    Fragebogen wechseln
-                  </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => setPracticeMode("all")}
-                      data-active={practiceMode === "all" ? "true" : undefined}
-                    >
-                      Alle Fragen
-                    </button>
-                    <button
-                      onClick={() => setPracticeMode("wrong")}
-                      data-active={practiceMode === "wrong" ? "true" : undefined}
-                    >
-                      Nur falsche (mind. 1x)
-                    </button>
-                    <button
-                      onClick={() => setPracticeMode("wrong-twice")}
-                      data-active={practiceMode === "wrong-twice" ? "true" : undefined}
-                    >
-                      Nur falsche (mind. 2x)
-                    </button>
-                  </>
-                )}
-                <button
-                  className="secondary-button reset-button"
-                  onClick={clearProgress}
-                  disabled={clampedIdx === 0 && !showResult}
-                >
-                  Fortschritt löschen
-                </button>
-                <button className="link-button" onClick={() => setIsAboutOpen(true)}>
-                  Über die App
-                </button>
-              </div>
-            </div>
+            <SessionControls
+              isExamSession={isExamSession}
+              examModeMeta={examModeMeta}
+              selectedForm={selectedForm}
+              selectedSupplement={selectedSupplement}
+              isExamSelectorVisible={isExamSelectorVisible}
+              onOpenExamSelector={() => setIsExamSelectorOpen(true)}
+              practiceMode={practiceMode}
+              onSetPracticeMode={setPracticeMode}
+              onClearProgress={clearProgress}
+              canClear={!(clampedIdx === 0 && !showResult)}
+              onOpenAbout={() => setIsAboutOpen(true)}
+              showResult={showResult}
+            />
           </div>
         )}
       </main>
