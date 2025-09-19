@@ -20,6 +20,8 @@ import hintBadge from "./assets/icons/hint_badge_lighthouse.svg";
 import progressBoat from "./assets/animations/boat_only_loading_0d9ad9.svg";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import HeaderBar from "./components/HeaderBar.jsx";
+import ConfirmExitDialog from "./components/ConfirmExitDialog.jsx";
 
 const MISTAKES_KEY = "sbf-mistakes";
 const PRACTICE_MODE_KEY = "sbf-mode";
@@ -682,25 +684,7 @@ function App() {
       {isAboutOpen && (
         <AboutOverlay onClose={() => setIsAboutOpen(false)} />
       )}
-      <header className="header" ref={headerRef}>
-        <div className="header-inner">
-          <div className="brand">
-            <span className="logo">
-              <img src={headerBadge} alt="SBF Binnen Trainer" />
-            </span>
-            <h1>SBF Binnen Trainer</h1>
-          </div>
-          <button
-            className="menu-button"
-            type="button"
-            aria-label="Menü öffnen"
-            onClick={() => toggleMenu("mode")}
-          >
-            ☰
-          </button>
-        </div>
-        <p className="subtitle">Sportbootführerschein Binnen – Üben & Verstehen</p>
-      </header>
+      <HeaderBar ref={headerRef} onToggleMenu={() => toggleMenu("mode")} />
       <main className="page-body">
         {isExamSelectorVisible && (
           <ExamSelectorOverlay
@@ -859,19 +843,7 @@ function App() {
         )}
       </main>
       {showExitConfirm && (
-        <div className="confirm-overlay" role="dialog" aria-modal="true">
-          <div className="confirm-modal">
-            <p>Möchten Sie die Anwendung wirklich schließen?</p>
-            <div className="confirm-actions">
-              <button type="button" className="secondary-button" onClick={cancelExit}>
-                Nein
-              </button>
-              <button type="button" className="primary-button" onClick={confirmExit}>
-                Ja, beenden
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmExitDialog onConfirm={confirmExit} onCancel={cancelExit} />
       )}
     </div>
   );
