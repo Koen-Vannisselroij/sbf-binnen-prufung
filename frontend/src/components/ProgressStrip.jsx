@@ -1,8 +1,8 @@
 import React from 'react';
 
-export default function ProgressStrip({ progressPercent, questionCounterDisplay, totalQuestions, progressBoat }) {
+export default function ProgressStrip({ progressPercent, questionCounterDisplay, totalQuestions, progressBoat, className = 'progress-section' }) {
   return (
-    <div className="progress-section">
+    <div className={className}>
       <div className="progress-meta">
         <span>Fortschritt</span>
         <span>
@@ -18,4 +18,3 @@ export default function ProgressStrip({ progressPercent, questionCounterDisplay,
     </div>
   );
 }
-

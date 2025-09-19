@@ -20,6 +20,9 @@ import hintBadge from "./assets/icons/hint_badge_lighthouse.svg";
 import progressBoat from "./assets/animations/boat_only_loading_0d9ad9.svg";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import ProgressStrip from "./components/ProgressStrip.jsx";
+import ExamSelectorOverlay from "./components/ExamSelectorOverlay.jsx";
+import ExamStatsPanel from "./components/ExamStatsPanel.jsx";
 import HeaderBar from "./components/HeaderBar.jsx";
 import ConfirmExitDialog from "./components/ConfirmExitDialog.jsx";
 
@@ -759,20 +762,13 @@ function App() {
           </div>
         ) : (
           <div className="session-content">
-            <div className={progressSectionClass}>
-              <div className="progress-meta">
-                <span></span>
-                <span>
-                  Frage {questionCounterDisplay} / {totalQuestions}
-                </span>
-              </div>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
-                <div className="ship-marker" style={{ left: `${progressPercent}%` }}>
-                  <img src={progressBoat} alt="" aria-hidden="true" />
-                </div>
-              </div>
-            </div>
+            <ProgressStrip
+              className={progressSectionClass}
+              progressPercent={progressPercent}
+              questionCounterDisplay={questionCounterDisplay}
+              totalQuestions={totalQuestions}
+              progressBoat={progressBoat}
+            />
             <div className="question-section">
               <div className="card">
                 <Question
@@ -851,137 +847,7 @@ function App() {
 
 export default App;
 
-function ExamSelectorOverlay({
-  examMode,
-  examModeKeys,
-  formOptions,
-  selectedForm,
-  examModeMeta,
-  onModeChange,
-  onFormChange,
-  onReset,
-  onClose,
-  canClose
-}) {
-  const modeLabel = examMode === "S"
-    ? "Segel-Fragebogen"
-    : examMode === "Supplement"
-      ? "Segel-Zusatzbogen"
-      : examMode === "AMS"
-        ? "Kombi-Fragebogen"
-        : "Motor-Fragebogen";
-  return (
-    <div className="exam-selector-overlay" role="dialog" aria-modal="true">
-      <div className="exam-selector-card">
-        <div className="exam-selector-header">
-          <h2>Fragebogen auswählen</h2>
-          {canClose && (
-            <button type="button" className="link-button" onClick={onClose}>
-              Schließen
-            </button>
-          )}
-        </div>
-        <div className="exam-selector-body">
-          <div className="toolbar-group">
-            <label>Version</label>
-            <select value={examMode} onChange={event => onModeChange(event.target.value)}>
-              {examModeKeys.map(modeKey => {
-                const meta = getExamModeMeta(modeKey);
-                return (
-                  <option key={modeKey} value={modeKey}>
-                    {meta?.label ?? modeKey}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-          {formOptions && formOptions.length > 0 ? (
-            <div className="toolbar-group">
-              <label>{modeLabel}</label>
-              <select value={selectedForm} onChange={event => onFormChange(event.target.value)}>
-                <option value="">Bitte wählen</option>
-                {formOptions.map(option => (
-                  <option key={String(option)} value={String(option)}>
-                    {String(option)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <p className="exam-selector-empty">Für diese Version sind keine Fragebögen hinterlegt.</p>
-          )}
-          {examModeMeta && (
-            <div className="exam-selector-meta">
-              <span>
-                {examModeMeta.questionCount} Fragen · {examModeMeta.timeMinutes} Min
-                {examModeMeta.maxWrong != null && ` · max. ${examModeMeta.maxWrong} Fehler`}
-              </span>
-              <div className="exam-selector-actions">
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={onReset}
-                  disabled={!selectedForm}
-                >
-                  Fortschritt zurücksetzen
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ExamStatsPanel({ examMode, stats, formOptions, selectedForm }) {
-  const keys = (formOptions || []).map(option => String(option));
-  if (!keys.length) return null;
-
-  const modeStats = (stats && stats[examMode]) || {};
-
-  return (
-    <div className="exam-stats">
-      {keys.map(key => {
-        const record = modeStats[key];
-        const bestPercentValue = record && typeof record.bestPercent === "number" && record.bestPercent >= 0
-          ? Math.round(Math.min(Math.max(record.bestPercent * 100, 0), 100))
-          : null;
-        const lastPercentValue = record && record.lastTotal
-          ? Math.round(Math.min(Math.max((record.lastCorrect / record.lastTotal) * 100, 0), 100))
-          : null;
-        const barWidth = bestPercentValue != null ? Math.min(Math.max(bestPercentValue, 4), 100) : 0;
-        const isSelected = String(selectedForm || "") === key;
-
-        return (
-          <div className={`exam-stat-card${isSelected ? " selected" : ""}`} key={`${examMode}-${key}`}>
-            <div className="exam-stat-header">
-              <span>{formatFormLabel(examMode, key)}</span>
-              <span>{bestPercentValue != null ? `${bestPercentValue}%` : "–"}</span>
-            </div>
-            <div className="exam-stat-progress">
-              <span style={{ width: `${barWidth}%` }} />
-            </div>
-            <div className="exam-stat-meta">
-              {record ? (
-                <>
-                  <span>Beste Runde: {record.bestCorrect}/{record.bestTotal}</span>
-                  <span>
-                    Letzte Runde: {record.lastCorrect}/{record.lastTotal}
-                    {lastPercentValue != null ? ` (${lastPercentValue}%)` : ""}
-                  </span>
-                  <span>Versuche: {record.attempts}</span>
-                </>
-              ) : (
-                <span>Noch keine Versuche</span>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+// ExamSelectorOverlay and ExamStatsPanel are imported from components
 
 function formatFormLabel(mode, key) {
   const numericPart = key.replace(/[^0-9]/g, "");
