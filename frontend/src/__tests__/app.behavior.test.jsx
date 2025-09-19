@@ -29,3 +29,11 @@ describe('App basic behavior', () => {
   });
 });
 
+describe('Menu interactions', () => {
+  test('can open stats view from menu', async () => {
+    render(<App />);
+    const statsBtn = await screen.findByRole('button', { name: /Statistiken/i });
+    await userEvent.click(statsBtn);
+    expect(await screen.findByText(/Deine Fragebogen-Ergebnisse/i)).toBeInTheDocument();
+  });
+});

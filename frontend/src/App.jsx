@@ -12,10 +12,6 @@ import {
   getExamModeFormCategories
 } from "./utils/examForms.js";
 import "./App.css";
-import headerBadge from "./assets/icons/header_badge_sailboat.svg";
-import practiceModeIcon from "./assets/icons/practice_mode_logbook.svg";
-import examModeIcon from "./assets/icons/fragebogen_scroll_check.svg";
-import statsModeIcon from "./assets/icons/stats_gauge_waves.svg";
 import hintBadge from "./assets/icons/hint_badge_lighthouse.svg";
 import progressBoat from "./assets/animations/boat_only_loading_0d9ad9.svg";
 import { App as CapacitorApp } from "@capacitor/app";
@@ -69,7 +65,6 @@ function App() {
   });
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [menuView, setMenuView] = useState("mode");
-  const menuContentRef = useRef(null);
   const [examCategory, setExamCategory] = useState(() => {
     return localStorage.getItem(MODE_CATEGORY_KEY) || DEFAULT_CATEGORY;
   });
@@ -206,20 +201,19 @@ function App() {
   const headerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const updateMenuAnchor = useCallback(() => {
+  const updateHeaderMetrics = useCallback(() => {
     if (!headerRef.current) {
       return;
     }
     const rect = headerRef.current.getBoundingClientRect();
-    const gap = 16;
     setHeaderHeight(rect.height);
   }, []);
 
   useLayoutEffect(() => {
-    updateMenuAnchor();
-    window.addEventListener("resize", updateMenuAnchor);
-    return () => window.removeEventListener("resize", updateMenuAnchor);
-  }, [updateMenuAnchor]);
+    updateHeaderMetrics();
+    window.addEventListener("resize", updateHeaderMetrics);
+    return () => window.removeEventListener("resize", updateHeaderMetrics);
+  }, [updateHeaderMetrics]);
 
   useEffect(() => {
     const isNative = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
@@ -420,17 +414,7 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    if (isMenuOpen && menuContentRef.current) {
-      menuContentRef.current.scrollTop = 0;
-    }
-  }, [isMenuOpen, menuView]);
-
-  useEffect(() => {
-    if (isMenuOpen && menuContentRef.current) {
-      menuContentRef.current.scrollTop = 0;
-    }
-  }, [isMenuOpen, menuView]);
+  // no-op: menu scroll reset removed after popover extraction
 
   // Reset state when mode changes (and store progress)
   useEffect(() => {
