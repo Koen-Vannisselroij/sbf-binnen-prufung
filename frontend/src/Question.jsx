@@ -9,13 +9,16 @@ function Question({ data, onAnswer, qNum, total }) {
   const [selected, setSelected] = useState(null);
   const [showCorrect, setShowCorrect] = useState(false);
   const [isTipOverlayOpen, setIsTipOverlayOpen] = useState(false);
-  const hasSupplemental = !!(data.tip || data.explanation);
+  const [tipOverlayMode, setTipOverlayMode] = useState(null);
+  const hasTip = Boolean(data.tip);
+  const hasExplanation = Boolean(data.explanation);
+  const hasSupplemental = hasTip || hasExplanation;
 
   function handleClick(optionIdx) {
     const isCorrect = optionIdx === newCorrectIdx;
     setSelected(optionIdx);
     setShowCorrect(true);
-    setIsTipOverlayOpen(false);
+    closeTipOverlay();
   }
 
   function handleContinue() {
@@ -24,7 +27,18 @@ function Question({ data, onAnswer, qNum, total }) {
     onAnswer(isCorrect);
     setSelected(null);
     setShowCorrect(false);
+    closeTipOverlay();
+  }
+
+  function openTipOverlay(mode) {
+    if (!hasSupplemental) return;
+    setTipOverlayMode(mode);
+    setIsTipOverlayOpen(true);
+  }
+
+  function closeTipOverlay() {
     setIsTipOverlayOpen(false);
+    setTipOverlayMode(null);
   }
 
   return (
@@ -60,6 +74,17 @@ function Question({ data, onAnswer, qNum, total }) {
           );
         })}
       </ul>
+      {hasTip && (
+        <div className="question-tools">
+          <button
+            type="button"
+            className="link-button tip-link"
+            onClick={() => openTipOverlay('tip')}
+          >
+            Tipp anzeigen
+          </button>
+        </div>
+      )}
       {showCorrect && (
         <div className={`feedback ${selected === newCorrectIdx ? 'correct' : 'wrong'}`}>
           {selected === newCorrectIdx
@@ -73,7 +98,7 @@ function Question({ data, onAnswer, qNum, total }) {
             <button
               type="button"
               className="secondary-button"
-              onClick={() => setIsTipOverlayOpen(true)}
+              onClick={() => openTipOverlay('full')}
             >
               Tipps & Hintergrund
             </button>
@@ -85,13 +110,13 @@ function Question({ data, onAnswer, qNum, total }) {
         <div className="tip-overlay" role="dialog" aria-modal="true">
           <div className="tip-modal">
             <div className="tip-modal-content">
-              {data.tip && (
+              {hasTip && (
                 <div className="tip-card" style={{ marginBottom: 12 }}>
                   <strong>Skipper‑Tipp:</strong>
                   <div style={{ marginTop: 6 }}>{data.tip}</div>
                 </div>
               )}
-              {data.explanation && (
+              {tipOverlayMode === 'full' && hasExplanation && (
                 <div className="exp-card">
                   <strong>Hintergrund:</strong>
                   <div style={{ marginTop: 6 }}>{data.explanation}</div>
@@ -99,7 +124,7 @@ function Question({ data, onAnswer, qNum, total }) {
               )}
             </div>
             <div className="tip-modal-actions">
-              <button className="secondary-button" onClick={() => setIsTipOverlayOpen(false)}>Schließen</button>
+              <button className="secondary-button" onClick={closeTipOverlay}>Schließen</button>
             </div>
           </div>
         </div>

@@ -1040,6 +1040,16 @@ ul {
   padding: 0;
 }
 
+.question-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.question-tools .tip-link {
+  font-size: 0.9rem;
+}
+
 .option-button {
   width: 100%;
   display: flex;
