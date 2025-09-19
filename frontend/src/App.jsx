@@ -18,6 +18,8 @@ import examModeIcon from "./assets/icons/fragebogen_scroll_check.svg";
 import statsModeIcon from "./assets/icons/stats_gauge_waves.svg";
 import hintBadge from "./assets/icons/hint_badge_lighthouse.svg";
 import progressBoat from "./assets/animations/boat_only_loading_0d9ad9.svg";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 
 const MISTAKES_KEY = "sbf-mistakes";
 const PRACTICE_MODE_KEY = "sbf-mode";
@@ -97,6 +99,8 @@ function App() {
     }
   });
   const [isExamSelectorOpen, setIsExamSelectorOpen] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const webPopHandlerRef = useRef(null);
 
   // Save to localStorage whenever these states change
   useEffect(() => {
@@ -216,6 +220,34 @@ function App() {
     window.addEventListener("resize", updateMenuAnchor);
     return () => window.removeEventListener("resize", updateMenuAnchor);
   }, [updateMenuAnchor]);
+
+  useEffect(() => {
+    const isNative = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+    if (isNative) {
+      const remove = CapacitorApp.addListener("backButton", ({ canGoBack }) => {
+        if (canGoBack) {
+          window.history.back();
+        } else {
+          setShowExitConfirm(true);
+        }
+      });
+      return () => {
+        remove?.remove();
+      };
+    }
+
+    const handler = (event) => {
+      event.preventDefault();
+      setShowExitConfirm(true);
+      window.history.pushState(null, "", window.location.href);
+    };
+    webPopHandlerRef.current = handler;
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handler);
+    return () => {
+      window.removeEventListener("popstate", handler);
+    };
+  }, []);
 
   function recordExamResult(modeKey, formKey, correct, total) {
     if (!modeKey || !formKey || !Number.isFinite(total) || total <= 0) {
@@ -355,6 +387,25 @@ function App() {
   const examNeedsSelection = isExamSession && !selectedForm;
   const isExamSelectorVisible = isExamSession && isExamSelectorOpen && !isMenuOpen;
   const progressSectionClass = isExamSelectorVisible ? "progress-section overlay-open" : "progress-section";
+  const isNativeApp = Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+
+  function confirmExit() {
+    if (isNativeApp) {
+      CapacitorApp.exitApp();
+      return;
+    }
+    if (webPopHandlerRef.current) {
+      window.removeEventListener("popstate", webPopHandlerRef.current);
+    }
+    window.history.go(-1);
+  }
+
+  function cancelExit() {
+    setShowExitConfirm(false);
+    if (!isNativeApp) {
+      window.history.pushState(null, "", window.location.href);
+    }
+  }
   const containerStyle = headerHeight
     ? { '--header-height': `${headerHeight}px` }
     : undefined;
@@ -819,6 +870,21 @@ function App() {
           </div>
         )}
       </main>
+      {showExitConfirm && (
+        <div className="confirm-overlay" role="dialog" aria-modal="true">
+          <div className="confirm-modal">
+            <p>Möchten Sie die Anwendung wirklich schließen?</p>
+            <div className="confirm-actions">
+              <button type="button" className="secondary-button" onClick={cancelExit}>
+                Nein
+              </button>
+              <button type="button" className="primary-button" onClick={confirmExit}>
+                Ja, beenden
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
