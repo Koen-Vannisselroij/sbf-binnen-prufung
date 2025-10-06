@@ -74,7 +74,16 @@ You can regenerate base questions and optionally enrich them with tips/explanati
 5) Use in the app
 - Copy whichever file you prefer into the frontend:
   - `cp questions_with_tips_and_explanations.json frontend/src/questions_with_tips_and_explanations.json`
-  - or `cp questions.json frontend/src/questions.json` and adjust imports if needed
+ - or `cp questions.json frontend/src/questions.json` and adjust imports if needed
+
+Extracting Question Images (Optional)
+- Ensure you have the official PDF in the repo (e.g. `Fragenkatalog-Binnen-August-2023.pdf`).
+- Install the helpers once: `python -m pip install pymupdf pillow`.
+- Run the extractor (dry-run first):
+  - `python tools/extract_question_images.py Fragenkatalog-Binnen-August-2023.pdf frontend/src/assets/question-images --dry-run`
+- Remove `--dry-run` to export files. Use `--map-file mapping.json` to produce a JSON report of `questionId → images`.
+- By default the script keeps images ≥ 1k pt²; tune with `--min-area` if photos are missed or tiny glyphs slip through.
+- After extraction, drop the files into `frontend/src/assets/question-images/`. The UI automatically matches filenames that start with the question id (e.g. `16.png`, `16_2.png`). You can still override per-question via an optional `"image"` or `"images"` list in the JSON if needed.
 
 Android (Capacitor)
 The Android project under `frontend/android` is already set up for Capacitor 7.

@@ -1,10 +1,13 @@
 import React, { useState, useMemo } from "react";
 import shuffleOptions from "./utils/shuffleOptions";
+import resolveQuestionImages from "./utils/questionImages.js";
 
 function Question({ data, onAnswer, qNum, total }) {
   // Shuffle answers only once per question (memoized)
-  const { shuffled, newCorrectIdx } = useMemo(() => 
+  const { shuffled, newCorrectIdx } = useMemo(() =>
     shuffleOptions(data.options, data.answer), [data]);
+
+  const questionImages = useMemo(() => resolveQuestionImages(data), [data]);
 
   const [selected, setSelected] = useState(null);
   const [showCorrect, setShowCorrect] = useState(false);
@@ -48,6 +51,15 @@ function Question({ data, onAnswer, qNum, total }) {
         <span className="question-id">Katalog-ID {data.id}</span>
       </div>
       <h3 className="question-title">{data.question}</h3>
+      {questionImages.length > 0 && (
+        <div className="question-image-stack">
+          {questionImages.map((imageSrc, idx) => (
+            <div className="question-image" key={`${imageSrc}-${idx}`}>
+              <img src={imageSrc} alt="" loading="lazy" />
+            </div>
+          ))}
+        </div>
+      )}
       <ul className="option-list">
         {shuffled.map((opt, i) => {
           let className = "option-button";

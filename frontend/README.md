@@ -15,6 +15,12 @@ Questions Data
   - Optional enrich: `python tools/explanation_giver.py`
   - Copy into this app: `cp questions_with_tips_and_explanations.json frontend/src/questions_with_tips_and_explanations.json`
 
+Question Images
+- Place assets in `src/assets/question-images/` (subfolders are fine). Filenames must start with the question id, optional `_2`, `_3`, … for follow-up images (e.g. `16.png`, `16_1.png`, `16_2.png`).
+- Accepted formats: PNG, JPG/JPEG, WEBP, SVG, GIF.
+- The UI automatically stacks all matching images under the question text; no entry in the JSON is required.
+- To override or add images manually, you can add `"image": "custom_name"` or `"images": ["custom1", "custom2"]` to the question object. Filenames can be given with or without extension.
+
 Data Source
 - The official SBF question catalog (Fragenkatalog) is published on ELWIS (Elektronisches Wasserstraßen‑Informationssystem, operated for the German Federal Ministry). See https://www.elwis.de and navigate: Freizeitschifffahrt → Sportbootführerscheine → Fragenkataloge. Use the current version and follow their terms.
 
